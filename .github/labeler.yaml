@@ -1,0 +1,22 @@
+area/apps:
+  - changed-files:
+      - any-glob-to-any-file: apps/**/*
+area/clusters:
+  - changed-files:
+      - any-glob-to-any-file: clusters/**/*
+area/infrastructure:
+  - changed-files:
+      - any-glob-to-any-file: infrastructure/**/*
+area/taskfiles:
+  - changed-files:
+      - any-glob-to-any-file:
+          - Taskfile.yaml
+          - taskfiles/**/*
+area/docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - README.md
+          - docs/**/*
+area/github:
+  - changed-files:
+      - any-glob-to-any-file: .github/**/*

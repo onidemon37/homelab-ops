@@ -1,0 +1,42 @@
+name: Flux Local
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - apps/**
+      - clusters/**
+      - infrastructure/kubernetes/**
+      - .github/workflows/flux-local.yaml
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  flux-local:
+    name: Flux manifest test (${{ matrix.cluster }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cluster: [prod, non-prod]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Test Flux manifests when bootstrapped
+        shell: bash
+        run: |
+          path="clusters/${{ matrix.cluster }}/flux-system"
+          if [ -f "$path/gotk-sync.yaml" ] || [ -f "$path/kustomization.yaml" ]; then
+            docker run --rm \
+              -v "$PWD:/workspace" \
+              ghcr.io/allenporter/flux-local:v8.1.0 \
+              test --enable-helm --all-namespaces --path "/workspace/$path" -v
+          else
+            echo "Flux is not bootstrapped for ${{ matrix.cluster }} yet; skipping."
+          fi

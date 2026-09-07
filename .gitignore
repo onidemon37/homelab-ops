@@ -1,0 +1,17 @@
+# Local credentials and cluster access
+.env
+.env.*
+kubeconfig
+*.key
+*.pem
+*.p12
+*.kubeconfig
+
+# Local tool environments
+.venv/
+# Generated and temporary files
+*.retry
+*.log
+.terraform/
+*.tfstate
+*.tfstate.*

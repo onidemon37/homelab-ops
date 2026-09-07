@@ -1,0 +1,21 @@
+version: '3'
+
+includes:
+  flux: taskfiles/flux.yaml
+  lint: taskfiles/lint.yaml
+  validation: taskfiles/validation.yaml
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  validate:
+    desc: Validate repository structure and manifests
+    cmds:
+      - task: validation:all
+
+  lint:
+    desc: Lint YAML, Markdown, and Ansible when present
+    cmds:
+      - task: lint:all

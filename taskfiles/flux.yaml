@@ -1,0 +1,24 @@
+version: '3'
+
+tasks:
+  reconcile:
+    desc: Reconcile Flux for one cluster
+    vars:
+      CLUSTER: '{{.CLUSTER | default "non-prod"}}'
+    cmds:
+      - flux reconcile source git flux-system --namespace flux-system
+      - flux reconcile kustomization apps --namespace flux-system --with-source
+    preconditions:
+      - test -f '{{.ROOT_DIR}}/clusters/{{.CLUSTER}}/apps.yaml'
+      - which flux
+      - which kubectl
+
+  debug:
+    desc: Show common Flux resources
+    cmds:
+      - kubectl get nodes
+      - kubectl get kustomizations -A
+      - kubectl get helmreleases -A
+      - kubectl get pods -A
+    preconditions:
+      - which kubectl

@@ -1,0 +1,35 @@
+version: '3'
+
+tasks:
+  all:
+    desc: Run available linters
+    cmds:
+      - task: yaml
+      - task: markdown
+      - task: ansible
+
+  yaml:
+    desc: Lint YAML files
+    cmds:
+      - yamllint -d relaxed .
+    preconditions:
+      - which yamllint
+
+  markdown:
+    desc: Lint Markdown files
+    cmds:
+      - markdownlint-cli2 '**/*.md' '#.git' '#.venv'
+    preconditions:
+      - which markdownlint-cli2
+
+  ansible:
+    desc: Lint Ansible files when present
+    cmds:
+      - |
+        if find '{{.ROOT_DIR}}/infrastructure/ansible' -type f \( -name '*.yml' -o -name '*.yaml' \) -print -quit 2>/dev/null | grep -q .; then
+          ansible-lint '{{.ROOT_DIR}}/infrastructure/ansible'
+        else
+          echo 'Skipping Ansible lint: no playbooks yet.'
+        fi
+    preconditions:
+      - which ansible-lint
