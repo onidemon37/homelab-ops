@@ -1,0 +1,42 @@
+version: '3'
+
+tasks:
+  all:
+    desc: Run offline validation for both environments
+    cmds:
+      - task: kustomize
+      - task: structure
+
+  kustomize:
+    desc: Build prod and non-prod overlays
+    cmds:
+      - for:
+          matrix:
+            ENV: [prod, non-prod]
+        task: kustomize-env
+        vars:
+          ENV: '{{.ITEM.ENV}}'
+    preconditions:
+      - which kustomize
+
+  kustomize-env:
+    internal: true
+    vars:
+      PATH: '{{.ROOT_DIR}}/apps/overlays/{{.ENV}}'
+    cmds:
+      - |
+        if test -f '{{.PATH}}/kustomization.yaml'; then
+          kustomize build '{{.PATH}}' >/dev/null
+        else
+          echo 'Skipping {{.ENV}}: overlay not scaffolded yet.'
+        fi
+
+  structure:
+    desc: Check the expected multi-tenant directories
+    cmds:
+      - test -d '{{.ROOT_DIR}}/apps/base'
+      - test -d '{{.ROOT_DIR}}/apps/overlays/prod'
+      - test -d '{{.ROOT_DIR}}/apps/overlays/non-prod'
+      - test -d '{{.ROOT_DIR}}/clusters/prod'
+      - test -d '{{.ROOT_DIR}}/clusters/non-prod'
+      - test -d '{{.ROOT_DIR}}/infrastructure'

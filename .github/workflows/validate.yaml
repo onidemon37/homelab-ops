@@ -1,0 +1,84 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  yaml:
+    name: YAML lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install yamllint
+        run: python -m pip install yamllint
+      - name: Lint YAML
+        run: |
+          files=$(find . -type f \( -name '*.yaml' -o -name '*.yml' \) -not -path './.git/*')
+          if [ -n "$files" ]; then
+            yamllint -d relaxed $files
+          fi
+
+  kustomize:
+    name: Kustomize ${{ matrix.environment }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [prod, non-prod]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install kustomize
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: v5.7.1
+      - name: Build application overlay
+        shell: bash
+        run: |
+          path="apps/overlays/${{ matrix.environment }}"
+          if [ -f "$path/kustomization.yaml" ]; then
+            kustomize build "$path"
+          else
+            echo "No $path/kustomization.yaml yet; skipping until the app phase is scaffolded."
+          fi
+      - name: Enforce environment domain boundaries
+        shell: bash
+        run: |
+          if [ "${{ matrix.environment }}" = "prod" ]; then
+            forbidden='nignu\\.com'
+          else
+            forbidden='andorigna\\.com'
+          fi
+          if grep -RInE "$forbidden" "apps/overlays/${{ matrix.environment }}" 2>/dev/null; then
+            echo "Found a domain belonging to another tenant/environment."
+            exit 1
+          fi
+
+  ansible:
+    name: Ansible lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install ansible-lint
+        run: python -m pip install ansible-core ansible-lint
+      - name: Lint Ansible when present
+        shell: bash
+        run: |
+          if find infrastructure/ansible -type f \( -name '*.yml' -o -name '*.yaml' \) -print -quit 2>/dev/null | grep -q .; then
+            ansible-lint infrastructure/ansible
+          else
+            echo "No Ansible files yet; skipping until the Debian bootstrap phase."
+          fi
