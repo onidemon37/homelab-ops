@@ -1,0 +1,5 @@
+# Empty for now — Phase 4 (Wave 1: Cilium, CoreDNS, Longhorn, CNPG, Vault, Cert-Manager)
+# starts populating this with real base components.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources: []
