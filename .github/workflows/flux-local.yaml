@@ -31,7 +31,7 @@ jobs:
       - name: Test Flux manifests when bootstrapped
         shell: bash
         run: |
-          path="clusters/${{ matrix.cluster }}/flux-system"
+          path="clusters/${{ matrix.cluster }}"
           docker run --rm \
             -v "$PWD:/workspace" \
             ghcr.io/allenporter/flux-local:v8.1.0 \
