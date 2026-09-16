@@ -29,12 +29,9 @@ spec:
     domain: cluster.local
   sync:
     kind: GitRepository
+    provider: github
     url: "https://github.com/onidemon37/homelab-ops"
     ref: "refs/heads/main"
     path: "clusters/prod"
-    # References a Secret reconciled by the terraform/prod root (managed_resources.secrets_yaml)
-    # or, if not using the Terraform path, created manually:
-    #   kubectl -n flux-system create secret generic flux-system \
-    #     --from-literal=username=git \
-    #     --from-literal=password=<temporary-token>
+    # References the GitHub App Secret reconciled by terraform/prod.
     pullSecret: flux-system
