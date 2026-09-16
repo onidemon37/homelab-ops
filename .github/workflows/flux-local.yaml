@@ -43,14 +43,18 @@ jobs:
             exit 1
           }
 
-          scratch="${RUNNER_TEMP}/flux-local-check"
-          rm -rf "$scratch"
-          mkdir -p "$scratch/clusters"
-          cp -R "$path" "$scratch/clusters/"
+          stub="$path/flux-system/gitrepository-ci.yaml"
+          trap 'rm -f "$stub"' EXIT
           cp ci/flux-local-stub/gitrepository.yaml \
-            "$scratch/$path/flux-system/gitrepository-ci.yaml"
+            "$stub"
+
+          echo "Debug workspace"
+          pwd
+          ls -la
+          ls -la clusters/ || echo "clusters/ not found at $(pwd)"
+          ls -la "$path" || echo "$path not found"
 
           docker run --rm \
-            -v "$scratch:/workspace" \
+            -v "$PWD:/workspace" \
             ghcr.io/allenporter/flux-local:v8.1.0 \
             test --enable-helm --all-namespaces --path "/workspace/$path" -v
