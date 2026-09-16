@@ -1,0 +1,9 @@
+version: '3'
+
+tasks:
+  git-secret:
+    desc: 'Mint a GitHub App token and apply the flux-system git credentials Secret (usage: task bootstrap:git-secret -- <app-id> <installation-id> <pem-file>)'
+    cmd: bash {{.ROOT_DIR}}/scripts/apply-git-secret.sh {{.CLI_ARGS}}
+    preconditions:
+      - which kubectl openssl curl jq
+      - test -f {{.ROOT_DIR}}/scripts/apply-git-secret.sh
