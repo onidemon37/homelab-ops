@@ -6,6 +6,7 @@ on:
     paths:
       - apps/**
       - clusters/**
+      - ci/flux-local-stub/**
       - infrastructure/kubernetes/**
       - .github/workflows/flux-local.yaml
   workflow_dispatch:
@@ -32,7 +33,23 @@ jobs:
         shell: bash
         run: |
           path="clusters/${{ matrix.cluster }}"
+          test -f "$path/kustomization.yaml" || {
+            echo "::error::Missing cluster kustomization: $path/kustomization.yaml"
+            exit 1
+          }
+
+          test -f ci/flux-local-stub/gitrepository.yaml || {
+            echo "::error::Missing flux-local GitRepository stub"
+            exit 1
+          }
+
+          scratch="${RUNNER_TEMP}/flux-local-check"
+          mkdir -p "$scratch/clusters/${{ matrix.cluster }}/flux-system"
+          cp -R "$path/." "$scratch/$path"
+          cp ci/flux-local-stub/gitrepository.yaml \
+            "$scratch/$path/flux-system/gitrepository-ci.yaml"
+
           docker run --rm \
-            -v "$PWD:/workspace" \
+            -v "$scratch:/workspace" \
             ghcr.io/allenporter/flux-local:v8.1.0 \
             test --enable-helm --all-namespaces --path "/workspace/$path" -v
