@@ -32,11 +32,7 @@ jobs:
         shell: bash
         run: |
           path="clusters/${{ matrix.cluster }}/flux-system"
-          if [ -f "$path/gotk-sync.yaml" ] || [ -f "$path/kustomization.yaml" ]; then
-            docker run --rm \
-              -v "$PWD:/workspace" \
-              ghcr.io/allenporter/flux-local:v8.1.0 \
-              test --enable-helm --all-namespaces --path "/workspace/$path" -v
-          else
-            echo "Flux is not bootstrapped for ${{ matrix.cluster }} yet; skipping."
-          fi
+          docker run --rm \
+            -v "$PWD:/workspace" \
+            ghcr.io/allenporter/flux-local:v8.1.0 \
+            test --enable-helm --all-namespaces --path "/workspace/$path" -v
