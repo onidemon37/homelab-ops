@@ -44,8 +44,9 @@ jobs:
           }
 
           scratch="${RUNNER_TEMP}/flux-local-check"
-          mkdir -p "$scratch/clusters/${{ matrix.cluster }}/flux-system"
-          cp -R "$path/." "$scratch/$path"
+          rm -rf "$scratch"
+          mkdir -p "$scratch/clusters"
+          cp -R "$path" "$scratch/clusters/"
           cp ci/flux-local-stub/gitrepository.yaml \
             "$scratch/$path/flux-system/gitrepository-ci.yaml"
 
