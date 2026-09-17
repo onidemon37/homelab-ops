@@ -31,6 +31,13 @@ jobs:
         uses: imranismail/setup-kustomize@v2
         with:
           kustomize-version: 5.7.1
+      - name: Install yq
+        shell: bash
+        run: |
+          sudo curl --fail --silent --show-error --location \
+            https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64 \
+            --output /usr/local/bin/yq
+          sudo chmod +x /usr/local/bin/yq
       - name: Render cluster and application manifests
         shell: bash
         run: |
@@ -42,3 +49,19 @@ jobs:
           kustomize build "$app_path" >/tmp/apps.yaml
           test -s /tmp/cluster.yaml
           test -s /tmp/apps.yaml
+
+          helmrelease_count=$(grep -c '^kind: HelmRelease$' /tmp/apps.yaml || true)
+          if [ "$helmrelease_count" -eq 0 ]; then
+            echo "::error::No HelmRelease resources rendered for $app_path"
+            exit 1
+          fi
+
+          for release in cert-manager metrics-server reloader envoy-gateway; do
+            found=$(yq eval-all \
+              "select(.kind == \"HelmRelease\" and .metadata.name == \"$release\") | .metadata.name" \
+              /tmp/apps.yaml)
+            if [ -z "$found" ]; then
+              echo "::error::Missing HelmRelease: $release"
+              exit 1
+            fi
+          done
