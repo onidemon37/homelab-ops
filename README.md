@@ -9,3 +9,6 @@ Kubernetes clusters.
   GitHub App authentication, and verification
 - [Minikube deployment](docs/minikube-deployment.md) — create and bootstrap the
     `pegasus` and `galactica` local test clusters
+- [Storage and databases](docs/storage-databases.md) — Longhorn PVCs
+    and CloudNative-PG clusters
+- [Networking](docs/networking.md) — Gateway API and Envoy Gateway
