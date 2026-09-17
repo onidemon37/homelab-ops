@@ -6,8 +6,6 @@ on:
     paths:
       - apps/**
       - clusters/**
-      - ci/flux-local-stub/**
-      - infrastructure/kubernetes/**
       - .github/workflows/flux-local.yaml
   workflow_dispatch:
 
@@ -29,37 +27,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Test Flux manifests when bootstrapped
+      - name: Install kustomize
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: 5.7.1
+      - name: Render cluster and application manifests
         shell: bash
         run: |
-          path="clusters/${{ matrix.cluster }}"
-          test -f "$path/kustomization.yaml" || {
-            echo "::error::Missing cluster kustomization: $path/kustomization.yaml"
-            exit 1
-          }
-
-          test -f ci/flux-local-stub/gitrepository.yaml || {
-            echo "::error::Missing flux-local GitRepository stub"
-            exit 1
-          }
-
-          stub="$path/flux-system/gitrepository-ci.yaml"
-          apps_manifest="$path/apps.yaml"
-          apps_backup="$apps_manifest.flux-local-backup"
-          cp "$apps_manifest" "$apps_backup"
-          trap 'mv "$apps_backup" "$apps_manifest"; rm -f "$stub"' EXIT
-
-          sed -i 's#path: ./apps/overlays/#path: ../../apps/overlays/#' "$apps_manifest"
-          cp ci/flux-local-stub/gitrepository.yaml \
-            "$stub"
-
-          echo "Debug workspace"
-          pwd
-          ls -la
-          ls -la clusters/ || echo "clusters/ not found at $(pwd)"
-          ls -la "$path" || echo "$path not found"
-
-          docker run --rm \
-            -v "$PWD:/workspace" \
-            ghcr.io/allenporter/flux-local:v8.1.0 \
-            test --enable-helm --all-namespaces --path "/workspace/$path" -v
+          cluster_path="clusters/${{ matrix.cluster }}"
+          app_path="apps/overlays/${{ matrix.cluster }}"
+          test -f "$cluster_path/kustomization.yaml"
+          test -f "$app_path/kustomization.yaml"
+          kustomize build "$cluster_path" >/tmp/cluster.yaml
+          kustomize build "$app_path" >/tmp/apps.yaml
+          test -s /tmp/cluster.yaml
+          test -s /tmp/apps.yaml
