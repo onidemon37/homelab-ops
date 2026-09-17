@@ -44,7 +44,12 @@ jobs:
           }
 
           stub="$path/flux-system/gitrepository-ci.yaml"
-          trap 'rm -f "$stub"' EXIT
+          apps_manifest="$path/apps.yaml"
+          apps_backup="$apps_manifest.flux-local-backup"
+          cp "$apps_manifest" "$apps_backup"
+          trap 'mv "$apps_backup" "$apps_manifest"; rm -f "$stub"' EXIT
+
+          sed -i 's#path: ./apps/overlays/#path: ../../apps/overlays/#' "$apps_manifest"
           cp ci/flux-local-stub/gitrepository.yaml \
             "$stub"
 
