@@ -3,6 +3,8 @@ kind: Kustomization
 resources:
   - ../../base
   - ../../base/networking
+  - ../../base/storage
 patches:
   - path: patches.yaml
   - path: networking-patches.yaml
+  - path: storage-patches.yaml
