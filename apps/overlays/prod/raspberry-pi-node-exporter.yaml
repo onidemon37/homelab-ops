@@ -1,0 +1,50 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: raspberry-pi-node-exporter
+  namespace: observability
+  labels:
+    app.kubernetes.io/name: raspberry-pi-node-exporter
+spec:
+  ports:
+    - name: metrics
+      port: 9100
+      targetPort: 9100
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: raspberry-pi-node-exporter
+  namespace: observability
+subsets:
+  - addresses:
+      # Replace with your Raspberry Pi LAN IP.
+      - ip: 192.168.89.68
+    ports:
+      - name: metrics
+        port: 9100
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: raspberry-pi-node-exporter
+  namespace: observability
+  labels:
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - observability
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: raspberry-pi-node-exporter
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      relabelings:
+        - sourceLabels: [__address__]
+          targetLabel: instance
+          replacement: raspberry-pi

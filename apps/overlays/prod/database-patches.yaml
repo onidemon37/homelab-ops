@@ -13,3 +13,11 @@ spec:
       limits:
         cpu: 500m
         memory: 512Mi
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: grafana
+  namespace: observability
+spec:
+  primaryUpdateStrategy: supervised

@@ -1,0 +1,80 @@
+apiVersion: external-secrets.io/v1
+kind: SecretStore
+metadata:
+  name: grafana-vault
+  namespace: observability
+spec:
+  provider:
+    vault:
+      server: https://vault-active.vault.svc.cluster.local:8200
+      path: secret
+      version: v2
+      caProvider:
+        type: Secret
+        name: vault-ca
+        key: ca.crt
+      auth:
+        kubernetes:
+          mountPath: kubernetes
+          role: app-grafana
+          serviceAccountRef:
+            name: grafana
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: grafana-database-credentials
+  namespace: observability
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: grafana-vault
+    kind: SecretStore
+  target:
+    name: grafana-database-credentials
+    creationPolicy: Owner
+    template:
+      type: Opaque
+  data:
+    - secretKey: username
+      remoteRef:
+        key: apps/grafana/database
+        property: username
+    - secretKey: password
+      remoteRef:
+        key: apps/grafana/database
+        property: password
+    - secretKey: GF_DATABASE_USER
+      remoteRef:
+        key: apps/grafana/database
+        property: username
+    - secretKey: GF_DATABASE_PASSWORD
+      remoteRef:
+        key: apps/grafana/database
+        property: password
+    - secretKey: admin-user
+      remoteRef:
+        key: apps/grafana/database
+        property: admin_username
+    - secretKey: admin-password
+      remoteRef:
+        key: apps/grafana/database
+        property: admin_password
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: grafana
+  namespace: observability
+spec:
+  instances: 1
+  primaryUpdateStrategy: unsupervised
+  storage:
+    storageClass: longhorn
+    size: 5Gi
+  bootstrap:
+    initdb:
+      database: grafana
+      owner: grafana
+      secret:
+        name: grafana-database-credentials
