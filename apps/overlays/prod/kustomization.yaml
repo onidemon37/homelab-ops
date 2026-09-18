@@ -4,7 +4,9 @@ resources:
   - ../../base
   - ../../base/networking
   - ../../base/storage
+  - ../../base/databases
 patches:
   - path: patches.yaml
   - path: networking-patches.yaml
   - path: storage-patches.yaml
+  - path: database-patches.yaml
