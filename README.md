@@ -12,3 +12,5 @@ Kubernetes clusters.
 - [Storage and databases](docs/storage-databases.md) — Longhorn PVCs
     and CloudNative-PG clusters
 - [Networking](docs/networking.md) — Gateway API and Envoy Gateway
+- [Vault manual bootstrap](docs/vault-manual-bootstrap.md) — initialize and unseal
+    the non-prod Vault deployment
