@@ -1,0 +1,36 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+  namespace: observability
+spec:
+  values:
+    defaultRules:
+      create: true
+      rules:
+        alertmanager: true
+        etcd: true
+        configReloaders: true
+        general: true
+        node: true
+        kubeProxy: false
+        windows: false
+    prometheus:
+      prometheusSpec:
+        retention: 7d
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: 1
+            memory: 1Gi
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: longhorn
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 10Gi

@@ -1,0 +1,24 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+  namespace: observability
+spec:
+  values:
+    prometheus:
+      prometheusSpec:
+        replicas: 2
+        enableRemoteWriteReceiver: true
+        externalLabels:
+          cluster: galactica
+          environment: prod
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              resources:
+                requests:
+                  storage: 5Gi
+    alertmanager:
+      alertmanagerSpec:
+        replicas: 2

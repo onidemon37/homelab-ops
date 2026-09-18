@@ -1,0 +1,38 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: raspberry-pi-temperature-rules
+  namespace: observability
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: raspberry-pi-temperature
+      rules:
+        - alert: RaspberryPiHighTemperature
+          expr: |
+            (
+              max by (instance) (node_thermal_zone_temp{instance="raspberry-pi"})
+              or
+              max by (instance) (node_hwmon_temp_celsius{instance="raspberry-pi"})
+            ) > 75
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Raspberry Pi temperature is high
+            description: Temperature above 75C for more than 5 minutes on {{ $labels.instance }}.
+        - alert: RaspberryPiCriticalTemperature
+          expr: |
+            (
+              max by (instance) (node_thermal_zone_temp{instance="raspberry-pi"})
+              or
+              max by (instance) (node_hwmon_temp_celsius{instance="raspberry-pi"})
+            ) > 82
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: Raspberry Pi temperature is critical
+            description: Temperature above 82C for more than 2 minutes on {{ $labels.instance }}.

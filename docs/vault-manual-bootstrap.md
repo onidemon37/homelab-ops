@@ -122,3 +122,41 @@ weaken the application isolation boundary.
 
 Repeat this pattern with a different namespace, ServiceAccount, Vault path, policy,
 and namespaced `SecretStore` for each application.
+
+## Grafana database bootstrap
+
+Grafana uses a CloudNative-PG cluster named `grafana` in the `observability`
+namespace. Its credentials are read from the app-specific Vault path
+`secret/apps/grafana/database` and synchronized by the `grafana-vault` SecretStore.
+
+Before reconciling the observability workload, add the Grafana values to Vault using
+the restricted automation token. Do not commit these values:
+
+```sh
+vault kv put secret/apps/grafana/database \
+  username=grafana \
+  password='<database-password>' \
+  admin_username='<grafana-admin-user>' \
+  admin_password='<grafana-admin-password>'
+```
+
+Because a namespaced `SecretStore` cannot read a Secret in the `vault` namespace,
+copy only the public `ca.crt` value from `vault/vault-ca` into a Secret named
+`vault-ca` in `observability`. Do not copy the Vault TLS private key:
+
+```sh
+kubectl --context pegasus-non-prod -n vault get secret vault-ca \
+  -o jsonpath='{.data.ca\.crt}' | base64 -d > /tmp/vault-ca.crt
+kubectl --context pegasus-non-prod -n observability create secret generic vault-ca \
+  --from-file=ca.crt=/tmp/vault-ca.crt \
+  --dry-run=client -o yaml | kubectl apply -f -
+rm -f /tmp/vault-ca.crt
+```
+
+Then reconcile Flux and verify the generated credentials, CNPG cluster, and Grafana:
+
+```sh
+flux --context pegasus-non-prod reconcile kustomization apps --with-source
+kubectl --context pegasus-non-prod -n observability \
+  get secretstore,externalsecret,cluster,pods,pvc
+```

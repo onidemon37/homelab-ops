@@ -12,3 +12,17 @@ patches:
   - path: storage-patches.yaml
   - path: database-patches.yaml
   - path: secrets-patches.yaml
+  - path: tempo-patches.yaml
+    target:
+      group: helm.toolkit.fluxcd.io
+      version: v2
+      kind: HelmRelease
+      name: tempo
+      namespace: observability
+  - path: grafana-patches.yaml
+    target:
+      group: helm.toolkit.fluxcd.io
+      version: v2
+      kind: HelmRelease
+      name: grafana
+      namespace: observability

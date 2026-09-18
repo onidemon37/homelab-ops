@@ -1,0 +1,10 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: tempo
+  namespace: observability
+spec:
+  values:
+    replicas: 2
+    persistence:
+      size: 5Gi

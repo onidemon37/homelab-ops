@@ -6,9 +6,28 @@ resources:
   - ../../base/storage
   - ../../base/databases
   - ../../base/secrets
+  - proxmox-ve-exporter.yaml
+  - raspberry-pi-node-exporter.yaml
+  - raspberry-pi-temperature-rules.yaml
+  - dashboard-kubernetes-vault.yaml
 patches:
   - path: patches.yaml
   - path: networking-patches.yaml
   - path: storage-patches.yaml
   - path: database-patches.yaml
   - path: secrets-patches.yaml
+  - path: tempo-patches.yaml
+    target:
+      group: helm.toolkit.fluxcd.io
+      version: v2
+      kind: HelmRelease
+      name: tempo
+      namespace: observability
+  - path: kube-prometheus-stack-patches.yaml
+  - path: grafana-patches.yaml
+    target:
+      group: helm.toolkit.fluxcd.io
+      version: v2
+      kind: HelmRelease
+      name: grafana
+      namespace: observability

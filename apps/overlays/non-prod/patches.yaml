@@ -30,3 +30,29 @@ spec:
     reloader:
       deployment:
         replicas: 1
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+  namespace: observability
+spec:
+  values:
+    prometheus:
+      prometheusSpec:
+        replicas: 1
+        externalLabels:
+          cluster: pegasus
+          environment: non-prod
+        #remoteWrite:
+        #  - url: https://prometheus.andorigna.com/api/v1/write
+        #    name: galactica
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              resources:
+                requests:
+                  storage: 1Gi
+    alertmanager:
+      alertmanagerSpec:
+        replicas: 1

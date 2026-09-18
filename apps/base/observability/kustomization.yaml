@@ -4,3 +4,23 @@ resources:
   - namespaces.yaml
   - repositories.yaml
   - kube-state-metrics.yaml
+  - kube-prometheus-stack.yaml
+  - loki.yaml
+  - tempo.yaml
+  - grafana-database.yaml
+  - grafana.yaml
+patches:
+  - path: prometheus.yaml
+    target:
+      group: helm.toolkit.fluxcd.io
+      version: v2
+      kind: HelmRelease
+      name: kube-prometheus-stack
+      namespace: observability
+  - path: alertmanager.yaml
+    target:
+      group: helm.toolkit.fluxcd.io
+      version: v2
+      kind: HelmRelease
+      name: kube-prometheus-stack
+      namespace: observability
