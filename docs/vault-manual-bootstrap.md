@@ -75,7 +75,50 @@ status` reports `Sealed: false`.
 
 ## Next configuration step
 
-External Secrets Operator is installed, but no `ClusterSecretStore` is created yet.
-Before creating one, configure Vault's Kubernetes authentication method, a least-
+External Secrets Operator is installed, but no application `SecretStore` is created
+yet. Before creating one, configure Vault's Kubernetes authentication method, a least-
 privilege policy, and a dedicated External Secrets service account/role. This avoids
-committing database or application credentials to Git.
+committing database or application credentials to Git. Configure Vault Kubernetes
+authentication and the External Secrets role/policy with the matching
+`infrastructure-live/tofu/vault/` OpenTofu root.
+
+Port-forward Vault in one terminal:
+
+```sh
+kubectl --context pegasus-non-prod -n vault port-forward svc/vault-active 8200:8200
+```
+
+In another terminal, set the bootstrap root token only for this one-time configuration
+run, then apply the non-production Vault root:
+
+```sh
+export TF_VAR_vault_token='<initial-root-token>'
+
+cd ../infrastructure-live/tofu/vault/non-production
+tofu init
+tofu apply
+```
+
+The workspace creates the KV v2 `secret/` mount, Kubernetes auth backend, and an
+per-application policy and Kubernetes auth role. Do not grant the ESO controller a
+wildcard policy. Instead, declare each application's namespace, ServiceAccount, and
+single allowed KV-v2 path in the matching `infrastructure-live/tofu/vault/<environment>`
+root:
+
+```hcl
+app_vault_access = {
+  example-api = {
+    namespace       = "example"
+    service_account = "example-api"
+    secret_path     = "apps/example-api/database"
+  }
+}
+```
+
+This creates the `app-example-api` Vault policy and Kubernetes auth role, allowing
+only `secret/data/apps/example-api/database` to be read. Pair it with a namespaced
+ESO `SecretStore` that uses the `example-api` ServiceAccount. A shared store would
+weaken the application isolation boundary.
+
+Repeat this pattern with a different namespace, ServiceAccount, Vault path, policy,
+and namespaced `SecretStore` for each application.
