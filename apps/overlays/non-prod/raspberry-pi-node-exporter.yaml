@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/name: raspberry-pi-node-exporter
 spec:
   type: ExternalName
-  externalName: rpi1.ninhu.xyz
+  externalName: rpi.ninhu.xyz
   ports:
     - name: metrics
       port: 9100

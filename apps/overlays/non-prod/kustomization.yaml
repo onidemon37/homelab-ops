@@ -6,9 +6,7 @@ resources:
   - ../../base/storage
   - ../../base/databases
   - ../../base/secrets
-  - proxmox-ve-exporter.yaml
   - dashboard-proxmox.yaml
-  - raspberry-pi-node-exporter.yaml
   - dashboard-raspberry-pi.yaml
 patches:
   - path: patches.yaml

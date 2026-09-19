@@ -44,6 +44,23 @@ spec:
         externalLabels:
           cluster: pegasus
           environment: non-prod
+        additionalScrapeConfigs:
+          - job_name: proxmox-ve-exporter
+            scrape_interval: 30s
+            scrape_timeout: 10s
+            static_configs:
+              - targets:
+                  - hyperion.ninhu.xyz:9221
+                labels:
+                  instance: proxmox-ve
+          - job_name: raspberry-pi-node-exporter
+            scrape_interval: 30s
+            scrape_timeout: 10s
+            static_configs:
+              - targets:
+                  - rpi.ninhu.xyz:9100
+                labels:
+                  instance: raspberry-pi
         #remoteWrite:
         #  - url: https://prometheus.andorigna.com/api/v1/write
         #    name: galactica
