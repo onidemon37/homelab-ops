@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-raspberry-pi
+  namespace: observability
+  labels:
+    grafana_dashboard: "1"
+data:
+  raspberry-pi.json: |
+    {
+      "annotations": {"list": []},
+      "editable": true,
+      "panels": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "id": 1,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}},
+          "targets": [{"expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{instance=\"raspberry-pi\",mode=\"idle\"}[5m])) * 100)", "legendFormat": "CPU", "refId": "A"}],
+          "title": "CPU Usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "id": 2,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}},
+          "targets": [{"expr": "100 * (1 - node_memory_MemAvailable_bytes{instance=\"raspberry-pi\"} / node_memory_MemTotal_bytes{instance=\"raspberry-pi\"})", "legendFormat": "Memory", "refId": "A"}],
+          "title": "Memory Usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "celsius"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "id": 3,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}},
+          "targets": [{"expr": "node_thermal_zone_temp{instance=\"raspberry-pi\"} / 1000", "legendFormat": "{{ zone }}", "refId": "A"}],
+          "title": "Temperature",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "id": 4,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}},
+          "targets": [{"expr": "rate(node_network_receive_bytes_total{instance=\"raspberry-pi\"}[5m])", "legendFormat": "{{ device }} RX", "refId": "A"}, {"expr": "rate(node_network_transmit_bytes_total{instance=\"raspberry-pi\"}[5m])", "legendFormat": "{{ device }} TX", "refId": "B"}],
+          "title": "Network Traffic",
+          "type": "timeseries"
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": ["raspberry-pi"],
+      "templating": {"list": []},
+      "time": {"from": "now-6h", "to": "now"},
+      "title": "Raspberry Pi Overview",
+      "uid": "raspberry-pi-overview",
+      "version": 1
+    }

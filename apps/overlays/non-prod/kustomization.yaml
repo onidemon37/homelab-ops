@@ -8,6 +8,8 @@ resources:
   - ../../base/secrets
   - proxmox-ve-exporter.yaml
   - dashboard-proxmox.yaml
+  - raspberry-pi-node-exporter.yaml
+  - dashboard-raspberry-pi.yaml
 patches:
   - path: patches.yaml
   - path: networking-patches.yaml
