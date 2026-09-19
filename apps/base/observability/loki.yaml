@@ -24,12 +24,40 @@ spec:
     deploymentMode: SingleBinary
     loki:
       auth_enabled: false
+      readinessProbe:
+        httpGet:
+          path: /ready
+          port: http-metrics
+        initialDelaySeconds: 45
+        periodSeconds: 10
+      livenessProbe:
+        httpGet:
+          path: /ready
+          port: http-metrics
+        initialDelaySeconds: 45
+        periodSeconds: 10
       commonConfig:
         replication_factor: 1
       storage:
         type: filesystem
+      schemaConfig:
+        configs:
+          - from: "2024-04-01"
+            store: tsdb
+            object_store: filesystem
+            schema: v13
+            index:
+              prefix: index_
+              period: 24h
     singleBinary:
       replicas: 1
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
       persistence:
         enabled: true
         storageClass: longhorn
