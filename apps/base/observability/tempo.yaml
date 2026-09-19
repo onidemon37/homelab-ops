@@ -24,6 +24,11 @@ spec:
     replicas: 1
     tempo:
       reportingEnabled: false
+      receivers:
+        otlp:
+          protocols:
+            grpc: {}
+            http: {}
     persistence:
       enabled: true
       storageClassName: longhorn
