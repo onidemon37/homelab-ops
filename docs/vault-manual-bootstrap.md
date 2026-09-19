@@ -73,6 +73,29 @@ The Longhorn volumes preserve Vault data, but manual-unseal Vault returns sealed
 a restart. Submit two unseal shares to each affected Pod again, then confirm `vault
 status` reports `Sealed: false`.
 
+## Vault audit logging and metrics
+
+Vault audit logging and telemetry are configured declaratively. The Vault HelmRelease
+mounts the Longhorn-backed audit volume at `/vault/audit`, and the matching OpenTofu
+root creates a file audit device at:
+
+```text
+/vault/audit/audit.log
+```
+
+The same Vault configuration enables the Prometheus endpoint at
+`/v1/sys/metrics`. Prometheus scrapes it through the internal
+`vault-active.vault.svc.cluster.local` Service over HTTPS. TLS verification is skipped
+for this internal scrape because the current Vault certificate is issued by the
+cluster-private CA; use CA-based verification before exposing metrics outside the
+cluster.
+
+The `prometheus-metrics` policy remains available for a future authenticated scrape
+configuration. The current scrape follows the previously tested model with
+`unauthenticated_metrics_access = true`; this does not grant access to Vault secrets.
+Audit logs may contain sensitive request metadata, so restrict access to the audit
+volume and monitor its Longhorn capacity.
+
 ## Next configuration step
 
 External Secrets Operator is installed, but no application `SecretStore` is created
@@ -126,37 +149,52 @@ and namespaced `SecretStore` for each application.
 ## Grafana database bootstrap
 
 Grafana uses a CloudNative-PG cluster named `grafana` in the `observability`
-namespace. Its credentials are read from the app-specific Vault path
-`secret/apps/grafana/database` and synchronized by the `grafana-vault` SecretStore.
+namespace. Its credentials are managed by the non-production OpenTofu root at
+`infrastructure-live/tofu/vault/non-production/`, written to the app-specific Vault
+path `secret/apps/grafana/database`, and synchronized by the `grafana-vault`
+SecretStore.
 
-Before reconciling the observability workload, add the Grafana values to Vault using
-the restricted automation token. Do not commit these values:
-
-```sh
-vault kv put secret/apps/grafana/database \
-  username=grafana \
-  password='<database-password>' \
-  admin_username='<grafana-admin-user>' \
-  admin_password='<grafana-admin-password>'
-```
-
-Because a namespaced `SecretStore` cannot read a Secret in the `vault` namespace,
-copy only the public `ca.crt` value from `vault/vault-ca` into a Secret named
-`vault-ca` in `observability`. Do not copy the Vault TLS private key:
+Provide the four sensitive values through environment variables. Do not commit them
+or put them in a `.tfvars` file:
 
 ```sh
-kubectl --context pegasus-non-prod -n vault get secret vault-ca \
-  -o jsonpath='{.data.ca\.crt}' | base64 -d > /tmp/vault-ca.crt
-kubectl --context pegasus-non-prod -n observability create secret generic vault-ca \
-  --from-file=ca.crt=/tmp/vault-ca.crt \
-  --dry-run=client -o yaml | kubectl apply -f -
-rm -f /tmp/vault-ca.crt
+export TF_VAR_grafana_database_username=grafana
+export TF_VAR_grafana_database_password='<database-password>'
+export TF_VAR_grafana_admin_username=admin
+export TF_VAR_grafana_admin_password='<grafana-admin-password>'
+
+cd infrastructure-live/tofu/vault/non-production
+export TF_VAR_vault_token='<opentofu-automation-token>'
+tofu apply
 ```
 
-Then reconcile Flux and verify the generated credentials, CNPG cluster, and Grafana:
+The OpenTofu resource writes the KV v2 record without storing the values in Git. The
+`app-grafana` policy and Kubernetes-auth role grant the Grafana ServiceAccount access
+only to this exact path.
+
+The Vault CA is also synchronized declaratively. `vault-ca-sync.yaml` grants the ESO
+ServiceAccount read-only access to only `vault/vault-ca`, then creates
+`observability/vault-ca` containing only `ca.crt`. No manual Secret copy is needed.
+
+After the changes are pushed, reconcile Flux:
 
 ```sh
 flux --context pegasus-non-prod reconcile kustomization apps --with-source
+```
+
+Verify the CA sync, generated credentials, CNPG cluster, and Grafana:
+
+```sh
 kubectl --context pegasus-non-prod -n observability \
-  get secretstore,externalsecret,cluster,pods,pvc
+  get clustersecretstore,secretstore,externalsecret,secret,pods,pvc
+```
+
+Expected results include `vault-ca-source` and `grafana-vault` ready,
+`grafana-database-credentials` synchronized, `cluster/grafana` ready, and the
+Grafana pod running. If the ExternalSecret needs an immediate retry, annotate it:
+
+```sh
+kubectl --context pegasus-non-prod -n observability \
+  annotate externalsecret grafana-database-credentials \
+  force-sync="$(date +%s)" --overwrite
 ```

@@ -20,7 +20,7 @@ metadata:
 subsets:
   - addresses:
       # Proxmox VE host where pve_exporter is running.
-      - ip: 192.168.89.40
+      - ip: hyperion.ninhu.xyz
     ports:
       - name: metrics
         port: 9221

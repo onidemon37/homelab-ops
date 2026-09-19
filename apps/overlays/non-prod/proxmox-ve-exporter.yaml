@@ -1,34 +1,32 @@
----
 apiVersion: v1
 kind: Service
 metadata:
-  name: raspberry-pi-node-exporter
+  name: proxmox-ve-exporter
   namespace: observability
   labels:
-    app.kubernetes.io/name: raspberry-pi-node-exporter
+    app.kubernetes.io/name: proxmox-ve-exporter
 spec:
   ports:
     - name: metrics
-      port: 9100
-      targetPort: 9100
+      port: 9221
+      targetPort: 9221
 ---
 apiVersion: v1
 kind: Endpoints
 metadata:
-  name: raspberry-pi-node-exporter
+  name: proxmox-ve-exporter
   namespace: observability
 subsets:
   - addresses:
-      # Replace with your Raspberry Pi LAN IP.
-      - ip: rpi.ninhu.xyz
+      - ip: hyperion.ninhu.xyz
     ports:
       - name: metrics
-        port: 9100
+        port: 9221
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: raspberry-pi-node-exporter
+  name: proxmox-ve-exporter
   namespace: observability
   labels:
     release: kube-prometheus-stack
@@ -38,7 +36,7 @@ spec:
       - observability
   selector:
     matchLabels:
-      app.kubernetes.io/name: raspberry-pi-node-exporter
+      app.kubernetes.io/name: proxmox-ve-exporter
   endpoints:
     - port: metrics
       path: /metrics
@@ -47,4 +45,4 @@ spec:
       relabelings:
         - sourceLabels: [__address__]
           targetLabel: instance
-          replacement: raspberry-pi
+          replacement: proxmox-ve

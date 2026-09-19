@@ -6,6 +6,8 @@ resources:
   - ../../base/storage
   - ../../base/databases
   - ../../base/secrets
+  - proxmox-ve-exporter.yaml
+  - dashboard-proxmox.yaml
 patches:
   - path: patches.yaml
   - path: networking-patches.yaml

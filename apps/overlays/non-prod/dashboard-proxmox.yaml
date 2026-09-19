@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-proxmox
+  namespace: observability
+  labels:
+    grafana_dashboard: "1"
+data:
+  proxmox.json: |
+    {
+      "annotations": {"list": []},
+      "editable": true,
+      "graphTooltip": 1,
+      "panels": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": 0}, {"color": "green", "value": 1}]}}, "overrides": []},
+          "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+          "id": 1,
+          "options": {"colorMode": "value", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
+          "targets": [{"expr": "up{instance=\"proxmox-ve\"}", "refId": "A", "instant": true}],
+          "title": "Exporter Up",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}, "overrides": []},
+          "gridPos": {"h": 8, "w": 9, "x": 6, "y": 0},
+          "id": 2,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}},
+          "targets": [{"expr": "100 * pve_cpu_usage_ratio", "legendFormat": "{{ node }}", "refId": "A"}],
+          "title": "Node CPU Usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}, "overrides": []},
+          "gridPos": {"h": 8, "w": 9, "x": 15, "y": 0},
+          "id": 3,
+          "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}},
+          "targets": [{"expr": "100 * (pve_memory_usage_bytes / pve_memory_size_bytes)", "legendFormat": "{{ node }}", "refId": "A"}],
+          "title": "Node Memory Usage",
+          "type": "timeseries"
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 39,
+      "tags": ["proxmox"],
+      "templating": {"list": []},
+      "time": {"from": "now-6h", "to": "now"},
+      "title": "Proxmox Overview",
+      "uid": "proxmox-overview",
+      "version": 1
+    }

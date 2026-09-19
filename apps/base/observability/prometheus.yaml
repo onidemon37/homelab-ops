@@ -18,6 +18,25 @@ spec:
     prometheus:
       prometheusSpec:
         retention: 7d
+        serviceMonitorSelector: {}
+        serviceMonitorNamespaceSelector: {}
+        additionalScrapeConfigs:
+          - job_name: vault
+            metrics_path: /v1/sys/metrics
+            params:
+              format:
+                - prometheus
+            scheme: https
+            scrape_interval: 30s
+            scrape_timeout: 25s
+            tls_config:
+              insecure_skip_verify: true
+            static_configs:
+              - targets:
+                  - vault-active.vault.svc.cluster.local:8200
+                labels:
+                  component: vault
+                  namespace: vault
         resources:
           requests:
             cpu: 200m
