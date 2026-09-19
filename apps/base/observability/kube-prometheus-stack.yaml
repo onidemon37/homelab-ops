@@ -29,4 +29,65 @@ spec:
         namespace: flux-system
   values:
     grafana:
-      enabled: false
+      enabled: true
+      defaultDashboardsEnabled: true
+      serviceMonitor:
+        enabled: true
+        path: /metrics
+      serviceAccount:
+        create: true
+        name: grafana
+      admin:
+        existingSecret: grafana-database-credentials
+        userKey: admin-user
+        passwordKey: admin-password
+      env:
+        GF_DATABASE_TYPE: postgres
+        GF_DATABASE_HOST: grafana-rw.observability.svc.cluster.local
+        GF_DATABASE_NAME: grafana
+        GF_DATABASE_SSL_MODE: disable
+      envFromSecrets:
+        - grafana-database-credentials
+      sidecar:
+        dashboards:
+          enabled: true
+          label: grafana_dashboard
+          labelValue: "1"
+          searchNamespace: ALL
+      datasources:
+        datasources.yaml:
+          apiVersion: 1
+          datasources:
+            - name: Prometheus
+              uid: prometheus
+              type: prometheus
+              url: >-
+                http://kube-prometheus-stack-prometheus.observability.svc.cluster.local:9090
+              access: proxy
+              isDefault: true
+              editable: false
+              jsonData:
+                timeInterval: 60s
+            - name: Loki
+              uid: loki
+              type: loki
+              url: >-
+                http://loki.observability.svc.cluster.local:3100
+              access: proxy
+              isDefault: false
+              editable: false
+            - name: Tempo
+              uid: tempo
+              type: tempo
+              url: >-
+                http://tempo.observability.svc.cluster.local:3200
+              access: proxy
+              isDefault: false
+              editable: false
+      persistence:
+        enabled: true
+        type: pvc
+        storageClassName: longhorn
+        accessModes:
+          - ReadWriteOnce
+        size: 5Gi

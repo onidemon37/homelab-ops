@@ -21,10 +21,3 @@ patches:
       kind: HelmRelease
       name: tempo
       namespace: observability
-  - path: grafana-patches.yaml
-    target:
-      group: helm.toolkit.fluxcd.io
-      version: v2
-      kind: HelmRelease
-      name: grafana
-      namespace: observability

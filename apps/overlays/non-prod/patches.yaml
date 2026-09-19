@@ -73,3 +73,7 @@ spec:
     alertmanager:
       alertmanagerSpec:
         replicas: 1
+    grafana:
+      replicas: 1
+      persistence:
+        size: 1Gi

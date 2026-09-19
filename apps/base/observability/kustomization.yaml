@@ -8,7 +8,7 @@ resources:
   - loki.yaml
   - tempo.yaml
   - grafana-database.yaml
-  - grafana.yaml
+  - alloy.yaml
 patches:
   - path: prometheus.yaml
     target:
