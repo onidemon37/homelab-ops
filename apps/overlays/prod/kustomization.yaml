@@ -10,7 +10,6 @@ resources:
   - dashboard-kubernetes-vault.yaml
   - dashboard-proxmox.yaml
 patches:
-  - path: patches.yaml
   - path: networking-patches.yaml
   - path: storage-patches.yaml
   - path: database-patches.yaml
