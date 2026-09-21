@@ -6,4 +6,5 @@ resources:
   - cert-manager-config.yaml
   - foundation.yaml
   - secrets.yaml
+  - cloudnative-pg.yaml
   - apps.yaml

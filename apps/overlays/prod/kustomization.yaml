@@ -4,7 +4,7 @@ resources:
   - ../../base
   - ../../base/networking
   - ../../base/storage
-  - ../../base/databases
+  - ../../base/secrets/controllers
   - ../../base/secrets/resources
   - raspberry-pi-temperature-rules.yaml
   - dashboard-kubernetes-vault.yaml
@@ -13,6 +13,7 @@ patches:
   - path: networking-patches.yaml
   - path: storage-patches.yaml
   - path: database-patches.yaml
+  - path: secrets/patches.yaml
   - path: tempo-patches.yaml
     target:
       group: helm.toolkit.fluxcd.io
