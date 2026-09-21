@@ -5,7 +5,7 @@ resources:
   - ../../base/networking
   - ../../base/storage
   - ../../base/databases
-  - ../../base/secrets
+  - ../../base/secrets/resources
   - dashboard-proxmox.yaml
   - dashboard-raspberry-pi.yaml
 patches:
@@ -13,7 +13,6 @@ patches:
   - path: networking-patches.yaml
   - path: storage-patches.yaml
   - path: database-patches.yaml
-  - path: secrets-patches.yaml
   - path: tempo-patches.yaml
     target:
       group: helm.toolkit.fluxcd.io

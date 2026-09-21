@@ -27,10 +27,11 @@ jobs:
         run: |
           mapfile -d '' files < <(
             find . -type f \( -name '*.yaml' -o -name '*.yml' \) \
-              -not -path './.git/*' -print0
+              -not -path './.git/*' \
+              -not -path '*/.terraform/*' -print0
           )
           if [ "${#files[@]}" -gt 0 ]; then
-            yamllint -d relaxed "${files[@]}"
+            yamllint -d relaxed --no-warnings "${files[@]}"
           fi
 
   kustomize:
