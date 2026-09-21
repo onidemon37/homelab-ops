@@ -12,7 +12,7 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
-    - name: foundation
+    - name: secrets
   interval: 10m
   path: ./apps/overlays/prod
   prune: true

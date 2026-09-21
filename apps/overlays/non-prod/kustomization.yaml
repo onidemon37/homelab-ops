@@ -5,7 +5,7 @@ resources:
   - ../../base/networking
   - ../../base/storage
   - ../../base/databases
-  - ../../base/secrets
+  - ../../base/secrets/resources
   - dashboard-proxmox.yaml
   - dashboard-raspberry-pi.yaml
 patches:
