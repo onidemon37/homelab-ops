@@ -5,6 +5,9 @@ metadata:
   namespace: observability
 spec:
   interval: 30m
+  dependsOn:
+    - name: longhorn
+      namespace: longhorn-system
   install:
     createNamespace: false
     remediation:

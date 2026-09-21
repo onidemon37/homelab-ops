@@ -1,10 +1,6 @@
-# Root Flux Kustomization for the prod (galactica) cluster's application layer.
-# Depends on foundation.yaml (cert-manager CRDs, namespaces, repositories) so
-# CRD-backed resources here (e.g. cert-manager.io/v1 Certificates) always
-# dry-run validate against CRDs that are already established - without this,
-# a fresh cluster bootstrap deadlocks: Certificates fail dry-run because their
-# CRD doesn't exist yet, which aborts the whole apply before cert-manager's own
-# HelmRelease (which installs that CRD) ever gets a chance to run.
+# Root Flux Kustomization for the prod (galactica) application layer. It waits
+# for cert-manager config, External Secrets, and CloudNativePG controller waves
+# before applying custom resources that depend on their CRDs.
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
