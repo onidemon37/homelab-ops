@@ -8,6 +8,8 @@ metadata:
   name: foundation
   namespace: flux-system
 spec:
+  dependsOn:
+    - name: cert-manager
   interval: 10m
   path: ./apps/overlays/prod/foundation
   prune: true

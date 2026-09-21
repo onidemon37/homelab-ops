@@ -1,12 +1,5 @@
-# Public ACME certs for andorigna.com (prod)/ninhu.xyz (non-prod) via Cloudflare
-# DNS-01. Staging avoids Let's Encrypt rate limits; switch an app's
-# Certificate/HTTPRoute to letsencrypt-prod once its DNS-01 flow is verified.
-#
-# The Cloudflare token these solvers reference (cloudflare-api-token-secret)
-# is synced from Vault in apps/base/secrets/cert-manager-cloudflare.yaml, not
-# here - Vault doesn't exist yet during this foundation wave. cert-manager
-# just reports these ClusterIssuers as not-ready until that secret shows up
-# in the following wave; nothing here blocks on it.
+# Public ACME certs for andorigna.com (prod)/ninhu.xyz use Cloudflare DNS-01.
+# The token arrives later from Vault through External Secrets Operator.
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:

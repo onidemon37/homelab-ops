@@ -13,6 +13,7 @@ metadata:
 spec:
   dependsOn:
     - name: secrets
+    - name: cert-manager-config
   interval: 10m
   path: ./apps/overlays/prod
   prune: true
