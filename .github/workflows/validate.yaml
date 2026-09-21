@@ -30,7 +30,7 @@ jobs:
               -not -path './.git/*' -print0
           )
           if [ "${#files[@]}" -gt 0 ]; then
-            yamllint -d relaxed "${files[@]}"
+            yamllint -d relaxed --no-warnings "${files[@]}"
           fi
 
   kustomize:
