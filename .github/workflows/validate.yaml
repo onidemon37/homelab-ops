@@ -48,15 +48,21 @@ jobs:
         uses: imranismail/setup-kustomize@v2
         with:
           kustomize-version: 5.7.1
-      - name: Build application overlay
+      - name: Build Flux application waves
         shell: bash
         run: |
-          path="apps/overlays/${{ matrix.environment }}"
-          if [ -f "$path/kustomization.yaml" ]; then
+          paths=(
+            "apps/overlays/${{ matrix.environment }}"
+            "apps/overlays/${{ matrix.environment }}/foundation"
+            "apps/overlays/${{ matrix.environment }}/foundation/cert-manager"
+            "apps/overlays/${{ matrix.environment }}/foundation/cert-manager-config"
+            "apps/overlays/${{ matrix.environment }}/secrets"
+            "apps/overlays/${{ matrix.environment }}/cloudnative-pg"
+            "clusters/${{ matrix.environment }}"
+          )
+          for path in "${paths[@]}"; do
             kustomize build "$path"
-          else
-            echo "No $path/kustomization.yaml yet; skipping until the app phase is scaffolded."
-          fi
+          done
       - name: Enforce environment domain boundaries
         shell: bash
         run: |
