@@ -44,28 +44,31 @@ jobs:
           cluster_path="clusters/${{ matrix.cluster }}"
           app_path="apps/overlays/${{ matrix.cluster }}"
           foundation_path="apps/overlays/${{ matrix.cluster }}/foundation"
+          secrets_path="apps/overlays/${{ matrix.cluster }}/secrets"
           test -f "$cluster_path/kustomization.yaml"
           test -f "$app_path/kustomization.yaml"
           test -f "$foundation_path/kustomization.yaml"
+          test -f "$secrets_path/kustomization.yaml"
           kustomize build "$cluster_path" >/tmp/cluster.yaml
           kustomize build "$app_path" >/tmp/apps.yaml
           kustomize build "$foundation_path" >/tmp/foundation.yaml
+          kustomize build "$secrets_path" >/tmp/secrets.yaml
           test -s /tmp/cluster.yaml
           test -s /tmp/apps.yaml
           test -s /tmp/foundation.yaml
+          test -s /tmp/secrets.yaml
 
-          # foundation (cert-manager/metrics-server/reloader) and apps (everything
-          # else) reconcile as separate Flux Kustomizations, so HelmReleases are
-          # split across both builds - check the union of the two.
-          cat /tmp/foundation.yaml /tmp/apps.yaml >/tmp/all.yaml
+          # Controllers reconcile across three Flux Kustomizations. Check the
+          # union so their required HelmReleases cannot silently disappear.
+          cat /tmp/foundation.yaml /tmp/secrets.yaml /tmp/apps.yaml >/tmp/all.yaml
 
           helmrelease_count=$(grep -c '^kind: HelmRelease$' /tmp/all.yaml || true)
           if [ "$helmrelease_count" -eq 0 ]; then
-            echo "::error::No HelmRelease resources rendered for $app_path/$foundation_path"
+            echo "::error::No HelmRelease resources rendered for $app_path/$foundation_path/$secrets_path"
             exit 1
           fi
 
-          for release in cert-manager metrics-server reloader envoy-gateway; do
+          for release in cert-manager metrics-server reloader external-secrets envoy-gateway; do
             found=$(yq eval-all \
               "select(.kind == \"HelmRelease\" and .metadata.name == \"$release\") | .metadata.name" \
               /tmp/all.yaml)
