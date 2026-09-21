@@ -7,5 +7,6 @@ spec:
   values:
     defaultSettings:
       defaultReplicaCount: 3
+      defaultDataPath: /var/lib/longhorn
     persistence:
       defaultClassReplicaCount: 3
