@@ -3,5 +3,7 @@ kind: Kustomization
 resources:
   - namespaces.yaml
   - repositories.yaml
+  - ../external-secrets
   - metrics-server.yaml
   - reloader.yaml
+
