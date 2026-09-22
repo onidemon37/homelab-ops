@@ -3,10 +3,8 @@ kind: Kustomization
 resources:
   - ../../../../base/cert-manager
   - ../../../../base/external-secrets
-  - ../../../../base/cnpg
   - ../../../../base/storage
   - ../../../../base/kube-system
 patches:
   - path: cert-manager-patches.yaml
-  - path: cnpg-patches.yaml
   - path: storage-patches.yaml

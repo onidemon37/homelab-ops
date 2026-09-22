@@ -1,0 +1,18 @@
+# Database operators and application database clusters reconcile after the
+# infrastructure services required for storage and secret access.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: databases
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-services
+  interval: 10m
+  path: ./apps/overlays/non-prod/pegasus/databases
+  prune: true
+  wait: true
+  timeout: 10m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system

@@ -1,10 +1,11 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ../../../base/observability
-  - dashboard-kubernetes-vault.yaml
+  - ../../../../base/observability
   - dashboard-proxmox.yaml
-  - raspberry-pi-temperature-rules.yaml
+  - dashboard-raspberry-pi.yaml
+  - proxmox-ve-exporter.yaml
+  - raspberry-pi-node-exporter.yaml
 patches:
   - path: prometheus-patches.yaml
   - path: database-patches.yaml

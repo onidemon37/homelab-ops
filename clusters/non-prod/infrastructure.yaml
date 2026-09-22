@@ -1,5 +1,5 @@
 # Wave 1a: Infrastructure Controllers
-# Deploys CRDs and operators: cert-manager, external-secrets, cnpg, longhorn,
+# Deploys CRDs and operators: cert-manager, external-secrets, longhorn,
 # kube-system utilities (metrics-server, reloader).
 # wait: true guarantees CRDs and Longhorn CSI driver are fully registered
 # before any consuming resources (Vault PVCs, Certificates) are applied.
@@ -10,7 +10,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m
-  path: ./apps/overlays/non-prod/infrastructure/controllers
+  path: ./apps/overlays/non-prod/pegasus/infrastructure/controllers
   prune: true
   wait: true
   timeout: 10m
@@ -33,7 +33,7 @@ spec:
   dependsOn:
     - name: infrastructure-controllers
   interval: 10m
-  path: ./apps/overlays/non-prod/infrastructure/services
+  path: ./apps/overlays/non-prod/pegasus/infrastructure/services
   prune: true
   wait: true
   timeout: 10m
