@@ -10,3 +10,7 @@ spec:
       defaultDataPath: /var/lib/longhorn
     persistence:
       defaultClassReplicaCount: 2
+    tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
