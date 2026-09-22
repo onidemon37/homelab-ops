@@ -1,0 +1,20 @@
+# Wave 3: Observability
+# Deploys the LGTM stack (kube-prometheus-stack, Loki, Tempo, Alloy),
+# Grafana's CNPG PostgreSQL database, dashboards, and alert rules.
+# dependsOn infrastructure-services (Longhorn for PVCs, CNPG controller
+# for the Grafana Cluster CR, Vault/ESO for Grafana database credentials).
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: observability
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure-services
+    - name: networking
+  interval: 10m
+  path: ./apps/overlays/non-prod/observability
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system

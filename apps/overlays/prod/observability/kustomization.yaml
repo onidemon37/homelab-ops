@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../../base/observability
+  - dashboard-kubernetes-vault.yaml
+  - dashboard-proxmox.yaml
+  - raspberry-pi-temperature-rules.yaml
+patches:
+  - path: prometheus-patches.yaml
+  - path: database-patches.yaml
+  - path: tempo-patches.yaml
+    target:
+      group: helm.toolkit.fluxcd.io
+      version: v2
+      kind: HelmRelease
+      name: tempo
+      namespace: observability

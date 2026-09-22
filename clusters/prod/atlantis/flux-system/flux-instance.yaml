@@ -24,6 +24,20 @@ spec:
     multitenant: false
     networkPolicy: true
     domain: cluster.local
+  kustomize:
+    patches:
+      - target:
+          kind: Deployment
+        patch: |
+          - op: add
+            path: /spec/template/spec/tolerations
+            value:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+                effect: NoSchedule
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+                effect: NoSchedule
   sync:
     kind: GitRepository
     provider: github
