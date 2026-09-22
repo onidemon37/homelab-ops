@@ -6,9 +6,6 @@ resources:
   - ../../base/storage
   - ../../base/secrets/controllers
   - ../../base/secrets/resources
-  - raspberry-pi-temperature-rules.yaml
-  - dashboard-kubernetes-vault.yaml
-  - dashboard-proxmox.yaml
 patches:
   - path: networking-patches.yaml
   - path: storage-patches.yaml

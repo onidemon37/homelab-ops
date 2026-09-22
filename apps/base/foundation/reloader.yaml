@@ -22,5 +22,10 @@ spec:
         namespace: flux-system
   values:
     reloader:
+      env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
       deployment:
         replicas: 1
