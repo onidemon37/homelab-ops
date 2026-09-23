@@ -4,4 +4,5 @@ resources:
   - flux-system
   - infrastructure.yaml
   - networking.yaml
+  - observability.yaml
   - shared-services.yaml

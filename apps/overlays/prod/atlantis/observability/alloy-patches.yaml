@@ -1,0 +1,73 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: alloy
+  namespace: observability
+spec:
+  values:
+    controller:
+      type: deployment
+      replicas: 1
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+    alloy:
+      configMap:
+        create: true
+        content: |
+          logging {
+            level  = "info"
+            format = "logfmt"
+          }
+
+          discovery.kubernetes "vault_pods" {
+            role = "pod"
+          }
+
+          discovery.relabel "vault_pods" {
+            targets = discovery.kubernetes.vault_pods.targets
+
+            rule {
+              source_labels = ["__meta_kubernetes_namespace"]
+              regex         = "vault"
+              action        = "keep"
+            }
+
+            rule {
+              source_labels = ["__meta_kubernetes_namespace"]
+              target_label  = "namespace"
+            }
+
+            rule {
+              source_labels = ["__meta_kubernetes_pod_name"]
+              target_label  = "pod"
+            }
+
+            rule {
+              source_labels = ["__meta_kubernetes_pod_container_name"]
+              target_label  = "container"
+            }
+
+            rule {
+              target_label = "cluster"
+              replacement  = "atlantis"
+            }
+
+            rule {
+              target_label = "environment"
+              replacement  = "prod"
+            }
+          }
+
+          loki.source.kubernetes "vault_pods" {
+            targets    = discovery.relabel.vault_pods.output
+            forward_to = [loki.echo.vault.receiver]
+          }
+
+          // Temporary diagnostic sink. Replace with Galactica Loki once its
+          // private receiver endpoint is available.
+          loki.echo "vault" {}

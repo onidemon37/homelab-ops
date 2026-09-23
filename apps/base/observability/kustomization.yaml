@@ -1,14 +1,11 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - namespaces.yaml
-  - repositories.yaml
-  - kube-state-metrics.yaml
+  - ../observability-collectors
   - kube-prometheus-stack.yaml
   - loki.yaml
   - tempo.yaml
   - grafana-database.yaml
-  - alloy.yaml
 patches:
   - path: prometheus.yaml
     target:

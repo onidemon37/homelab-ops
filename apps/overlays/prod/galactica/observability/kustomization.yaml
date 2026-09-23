@@ -6,6 +6,7 @@ resources:
   - dashboard-proxmox.yaml
   - raspberry-pi-temperature-rules.yaml
 patches:
+  - path: alloy-patches.yaml
   - path: prometheus-patches.yaml
   - path: database-patches.yaml
   - path: tempo-patches.yaml
