@@ -8,6 +8,8 @@ spec:
     defaultSettings:
       defaultReplicaCount: 2
       defaultDataPath: /var/lib/longhorn
+      # discover-proc-kubelet-cmdline is system-managed by Longhorn, so component-level tolerations do not control it.
+      taintToleration: "node-role.kubernetes.io/control-plane:NoSchedule;node-role.kubernetes.io/master:NoSchedule"
     persistence:
       defaultClassReplicaCount: 2
     csi:

@@ -9,3 +9,5 @@ patches:
   - path: cert-manager-patches.yaml
   - path: reloader-patches.yaml
   - path: storage-patches.yaml
+  - path: metrics-server-patches.yaml
+  - path: external-secrets-patches.yaml

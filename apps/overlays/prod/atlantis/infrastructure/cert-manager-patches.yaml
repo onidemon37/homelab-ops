@@ -6,20 +6,16 @@ metadata:
 spec:
   values:
     replicaCount: 1
-    tolerations:
+    tolerations: &controlPlaneTolerations
       - key: "node-role.kubernetes.io/control-plane"
         operator: "Exists"
         effect: "NoSchedule"
     webhook:
       replicaCount: 1
-      tolerations:
-        - key: "node-role.kubernetes.io/control-plane"
-          operator: "Exists"
-          effect: "NoSchedule"
+      tolerations: *controlPlaneTolerations
     cainjector:
       replicaCount: 1
-      tolerations:
-        - key: "node-role.kubernetes.io/control-plane"
-          operator: "Exists"
-          effect: "NoSchedule"
-    
+      tolerations: *controlPlaneTolerations
+    startupapicheck:
+      replicaCount: 1
+      tolerations: *controlPlaneTolerations
