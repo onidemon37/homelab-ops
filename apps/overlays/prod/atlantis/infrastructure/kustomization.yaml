@@ -7,4 +7,5 @@ resources:
   - ../../../../base/kube-system
 patches:
   - path: cert-manager-patches.yaml
+  - path: reloader-patches.yaml
   - path: storage-patches.yaml
