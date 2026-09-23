@@ -6,7 +6,7 @@ metadata:
 spec:
   values:
     deployment:
-      replicaCount: 1
+      replicas: 1
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
