@@ -30,12 +30,17 @@ kubectl --context <pegasus|galactica> -n flux-system rollout status deploy/flux-
 Officially supported via the
 [`flux-operator-bootstrap`](https://github.com/controlplaneio-fluxcd/terraform-kubernetes-flux-operator-bootstrap)
 module, which installs both the operator and the `FluxInstance` in one apply. Roots
-already scaffolded in this repo: `terraform/non-prod/` (pegasus) and `terraform/prod/`
-(galactica), each with its own `helm`/`kubernetes` provider config pointing at the
-matching kubeconfig context:
+already scaffolded in this repo:
+
+- `terraform/non-prod/` for Pegasus
+- `terraform/prod/galactica/` for Galactica
+- `terraform/prod/atlantis/` for Atlantis
+
+Each root has its own `helm`/`kubernetes` provider config pointing at the matching
+kubeconfig context:
 
 ```sh
-cd terraform/non-prod   # or terraform/prod
+cd terraform/non-prod   # or terraform/prod/galactica
 tofu init
 tofu apply \
   -var='github_app_id=<app-id>' \
@@ -49,6 +54,51 @@ both providers), no separate credentials needed. Each root's `main.tf` reads the
 `clusters/<env>/flux-system/flux-instance.yaml` already committed here, so the
 Kubernetes-manifest and Terraform installation paths stay in sync — no duplicated
 config.
+
+### Bootstrap Atlantis
+
+Atlantis uses the `atlantis-vault` kubeconfig context and reconciles
+`clusters/prod/atlantis`. Confirm the Kubernetes cluster is healthy first:
+
+```sh
+kubectl --context atlantis-vault get nodes
+```
+
+Export the GitHub App inputs. Keep the PEM file outside Git:
+
+```sh
+export TF_VAR_github_app_id='<app-id>'
+export TF_VAR_github_app_installation_id='<installation-id>'
+export TF_VAR_github_app_private_key_file="$HOME/Downloads/<github-app-private-key>.pem"
+chmod 600 "$TF_VAR_github_app_private_key_file"
+```
+
+Run the Atlantis bootstrap root:
+
+```sh
+cd /home/onidemon/Development/homelab-ops/terraform/prod/atlantis
+tofu init
+tofu plan
+tofu apply
+```
+
+The Atlantis root supplies control-plane tolerations to the bootstrap Job and Flux
+Operator. The Atlantis `FluxInstance` applies the same tolerations to the generated
+Flux controller Deployments because every Atlantis node retains the control-plane
+`NoSchedule` taint.
+
+Verify the bootstrap and GitOps handoff:
+
+```sh
+kubectl --context atlantis-vault -n flux-system get pods
+kubectl --context atlantis-vault -n flux-system get fluxinstance flux
+kubectl --context atlantis-vault -n flux-system get gitrepositories,kustomizations
+kubectl --context atlantis-vault get helmreleases -A
+```
+
+Expected results are `Ready=True` for the FluxInstance, GitRepository, root
+Kustomization, and eventually the Atlantis `infrastructure` Kustomization. Foundation
+HelmReleases may remain reconciling while images are pulled and Longhorn initializes.
 
 The Terraform root also creates the GitHub App Secret required by the private
 repository sync. The PEM file is read locally during `tofu apply`; it is not part of
@@ -82,7 +132,7 @@ export TF_VAR_github_app_id='<app-id>'
 export TF_VAR_github_app_installation_id='<installation-id>'
 export TF_VAR_github_app_private_key_file="$HOME/Downloads/<github-app-private-key>.pem"
 
-cd terraform/non-prod   # or terraform/prod
+cd terraform/non-prod   # or terraform/prod/galactica or terraform/prod/atlantis
 tofu apply
 ```
 
@@ -100,6 +150,10 @@ kubectl --context pegasus get gitrepository,kustomization -n flux-system
 # Repeat with galactica for production.
 kubectl --context galactica get fluxinstance,fluxreport -n flux-system
 kubectl --context galactica get gitrepository,kustomization -n flux-system
+
+# Atlantis Vault cluster.
+kubectl --context atlantis-vault get fluxinstance,fluxreport -n flux-system
+kubectl --context atlantis-vault get gitrepository,kustomization -n flux-system
 ```
 
 Expected state is `Ready=True` for `FluxInstance/flux`, `FluxReport/flux`,
