@@ -6,14 +6,15 @@ metadata:
 spec:
   values:
     deployment:
-      replicas: 1
-      tolerations: &controlPlaneTolerations
-        - key: node-role.kubernetes.io/control-plane
-          operator: Exists
-          effect: NoSchedule
-        - key: node-role.kubernetes.io/master
-          operator: Exists
-          effect: NoSchedule
+      envoyGateway:
+        replicas: 1
+        tolerations: &controlPlaneTolerations
+          - key: node-role.kubernetes.io/control-plane
+            operator: Exists
+            effect: NoSchedule
+          - key: node-role.kubernetes.io/master
+            operator: Exists
+            effect: NoSchedule
     certgen:
       job:
         tolerations: *controlPlaneTolerations
