@@ -6,8 +6,8 @@ metadata:
 spec:
   values:
     deployment:
-      envoyGateway:
-        replicas: 1
+      replicas: 1
+      pod:
         tolerations: &controlPlaneTolerations
           - key: node-role.kubernetes.io/control-plane
             operator: Exists
