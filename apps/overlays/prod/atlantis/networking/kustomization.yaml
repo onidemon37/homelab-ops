@@ -3,4 +3,4 @@ kind: Kustomization
 resources:
   - ../../../../base/envoy-gateway
 patches:
-  - path: envoy-gateway.yaml
+  - path: envoy-gateway-patches.yaml

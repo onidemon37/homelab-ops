@@ -64,6 +64,9 @@ The manual gate is deliberate until an independent KMS or HSM is available for a
 
 ## Foundation Checks
 
+Follow the central [Flux Operator installation guide](../../../docs/flux-operator-install.md#bootstrap-atlantis)
+for the Atlantis Terraform bootstrap, GitHub App inputs, and handoff verification.
+
 ```sh
 kubectl --context atlantis-vault get nodes -o wide
 kubectl --context atlantis-vault get kustomizations -n flux-system
