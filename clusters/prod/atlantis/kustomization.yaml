@@ -4,3 +4,4 @@ resources:
   - flux-system
   - infrastructure.yaml
   - networking.yaml
+  - shared-services.yaml

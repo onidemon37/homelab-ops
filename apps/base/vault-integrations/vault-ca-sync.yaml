@@ -26,8 +26,6 @@ roleRef:
   kind: Role
   name: external-secrets-vault-ca
 ---
-# ClusterSecretStore isn't registered under external-secrets.io/v1 in the
-# pinned chart version yet (only SecretStore/ExternalSecret are) - v1beta1 here.
 apiVersion: external-secrets.io/v1
 kind: ClusterSecretStore
 metadata:

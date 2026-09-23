@@ -35,6 +35,9 @@ apps/overlays/prod/atlantis/infrastructure/
 Atlantis does not deploy CNPG, Grafana, observability, tenant workloads, or public application
 networking.
 
+Atlantis does deploy Envoy Gateway for private internal traffic. It is not exposed through
+Cloudflare or the public Internet.
+
 The future shared-services layer is:
 
 ```text
@@ -50,6 +53,9 @@ integrations after the foundation is healthy.
 infrastructure
   -> Longhorn StorageClass and foundation controllers
 
+networking
+  -> Envoy Gateway controller and private internal Gateway
+
 shared-services
   -> Vault TLS and Vault HA/Raft
 
@@ -62,6 +68,26 @@ secret integrations
 
 The manual gate is deliberate until an independent KMS or HSM is available for auto-unseal.
 
+## Internal Networking
+
+Atlantis uses separate addresses for control-plane and service traffic:
+
+- `192.168.89.130` is the Kube-VIP Kubernetes API endpoint.
+- `192.168.89.131` is the internal Envoy Gateway LoadBalancer VIP.
+
+The networking overlay installs Envoy Gateway and defines:
+
+- `EnvoyProxy/networking/internal` for the private data plane
+- `GatewayClass/internal`
+- `Gateway/networking/internal`
+
+Kube-VIP runs with `--services` and advertises the LoadBalancer VIP on the LAN. The initial
+Gateway has an internal HTTP listener only; Vault routing and TLS policy are added with the Vault
+shared-services layer.
+
+See [Atlantis networking](../../../apps/overlays/prod/atlantis/networking/README.md) for manifests,
+IP ownership, and verification commands.
+
 ## Foundation Checks
 
 Follow the central [Flux Operator installation guide](../../../docs/flux-operator-install.md#bootstrap-atlantis)
@@ -73,6 +99,7 @@ kubectl --context atlantis-vault get kustomizations -n flux-system
 kubectl --context atlantis-vault get helmreleases -A
 kubectl --context atlantis-vault get pods -A
 kubectl --context atlantis-vault get storageclass
+kubectl --context atlantis-vault get gatewayclass,gateway -A
 ```
 
 Do not add Vault-dependent resources until the foundation Kustomization is `Ready=True` and

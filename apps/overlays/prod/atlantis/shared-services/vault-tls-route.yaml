@@ -1,0 +1,16 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: TLSRoute
+metadata:
+  name: vault
+  namespace: vault
+spec:
+  parentRefs:
+    - name: internal
+      namespace: networking
+      sectionName: vault-tls
+  hostnames:
+    - vault.ninhu.xyz
+  rules:
+    - backendRefs:
+        - name: vault-active
+          port: 8200

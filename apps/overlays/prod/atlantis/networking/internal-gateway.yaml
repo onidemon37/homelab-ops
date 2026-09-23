@@ -51,3 +51,18 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
+    - name: vault-tls
+      hostname: vault.ninhu.xyz
+      protocol: TLS
+      port: 443
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        kinds:
+          - group: gateway.networking.k8s.io
+            kind: TLSRoute
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              gateway.ninhu.xyz/internal-access: "true"
