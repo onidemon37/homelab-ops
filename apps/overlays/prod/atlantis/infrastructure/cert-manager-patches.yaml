@@ -17,5 +17,4 @@ spec:
       replicaCount: 1
       tolerations: *controlPlaneTolerations
     startupapicheck:
-      replicaCount: 1
       tolerations: *controlPlaneTolerations
