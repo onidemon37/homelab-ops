@@ -10,6 +10,8 @@ spec:
       defaultDataPath: /var/lib/longhorn
     persistence:
       defaultClassReplicaCount: 2
+    csi:
+      kubeletRootDir: /var/lib/kubelet
     tolerations: &controlPlaneTolerations
       - key: "node-role.kubernetes.io/control-plane"
         operator: "Exists"
