@@ -1,14 +1,14 @@
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyProxy
 metadata:
-  name: galactica-internal
+  name: internal
   namespace: networking
 spec:
   provider:
     type: Kubernetes
     kubernetes:
       envoyDeployment:
-        replicas: 2
+        replicas: 1
       envoyService:
         type: LoadBalancer
         loadBalancerClass: kube-vip.io/kube-vip-class
@@ -20,13 +20,13 @@ spec:
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
 metadata:
-  name: galactica-internal
+  name: internal
 spec:
   controllerName: gateway.envoyproxy.io/gatewayclass-controller
   parametersRef:
     group: gateway.envoyproxy.io
     kind: EnvoyProxy
-    name: galactica-internal
+    name: internal
     namespace: networking
 ---
 apiVersion: gateway.networking.k8s.io/v1
@@ -35,14 +35,11 @@ metadata:
   name: internal
   namespace: networking
 spec:
-  gatewayClassName: galactica-internal
+  gatewayClassName: internal
   listeners:
     - name: http
       protocol: HTTP
       port: 80
       allowedRoutes:
         namespaces:
-          from: Selector
-          selector:
-            matchLabels:
-              gateway.ninhu.xyz/internal-access: "true"
+          from: Same
