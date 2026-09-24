@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
-    - name: infrastructure-services
+    - name: secrets
   interval: 10m
   path: ./apps/overlays/prod/galactica/databases
   prune: true

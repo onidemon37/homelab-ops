@@ -7,7 +7,7 @@ variable "kubeconfig_path" {
 variable "kube_context" {
   description = "kubeconfig context for the galactica (prod) cluster"
   type        = string
-  default     = "galactica"
+  default     = "galactica-prod"
 }
 
 variable "bootstrap_revision" {

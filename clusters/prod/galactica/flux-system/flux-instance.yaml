@@ -1,8 +1,5 @@
-# Bootstrap note: the Flux Operator itself (CRDs + controller-manager) is installed
-# once, out-of-band, before this FluxInstance can be reconciled:
+# Bootstrap note: install the Flux Operator out-of-band before reconciling this FluxInstance:
 #   kubectl apply -f https://github.com/controlplaneio-fluxcd/flux-operator/releases/latest/download/install.yaml
-# Everything from here on (the Flux controllers themselves, and this repo's sync) is
-# then managed by the operator via this CR.
 apiVersion: fluxcd.controlplane.io/v1
 kind: FluxInstance
 metadata:
@@ -27,11 +24,25 @@ spec:
     multitenant: false
     networkPolicy: true
     domain: cluster.local
+  kustomize:
+    patches:
+      - target:
+          kind: Deployment
+        patch: |
+          - op: add
+            path: /spec/template/spec/tolerations
+            value:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+                effect: NoSchedule
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+                effect: NoSchedule
   sync:
     kind: GitRepository
     provider: github
     url: "https://github.com/onidemon37/homelab-ops"
     ref: "refs/heads/main"
-    path: "clusters/prod"
+    path: "clusters/prod/galactica"
     # References the GitHub App Secret reconciled by terraform/prod.
     pullSecret: flux-system

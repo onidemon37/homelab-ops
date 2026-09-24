@@ -4,14 +4,15 @@ Vault is a three-replica Raft cluster using Longhorn-backed persistent data and 
 volumes. It is deliberately deployed sealed. Manual initialization and unseal are
 required because this homelab does not have an external KMS or HSM.
 
-This guide uses the `pegasus-non-prod` kubeconfig context.
+This guide uses the `atlantis-vault` kubeconfig context. Atlantis is the dedicated
+Vault cluster; Pegasus and Galactica consume it remotely and do not host Vault.
 
 ## Verify the Flux deployment
 
 ```sh
-kubectl --context pegasus-non-prod -n flux-system get helmrelease vault external-secrets
-kubectl --context pegasus-non-prod -n vault get pods,pvc
-kubectl --context pegasus-non-prod -n external-secrets get pods
+kubectl --context atlantis-vault -n flux-system get kustomization shared-services
+kubectl --context atlantis-vault -n vault get helmrelease vault
+kubectl --context atlantis-vault -n vault get pods,pvc,certificate
 ```
 
 Wait for `vault-0`, `vault-1`, and `vault-2` and their data/audit PVCs to be
@@ -22,7 +23,7 @@ Wait for `vault-0`, `vault-1`, and `vault-2` and their data/audit PVCs to be
 Run this exactly once for a fresh Vault data volume:
 
 ```sh
-kubectl --context pegasus-non-prod -n vault exec -it vault-0 -- \
+kubectl --context atlantis-vault -n vault exec -it vault-0 -- \
   sh -c 'VAULT_ADDR=https://127.0.0.1:8200 VAULT_SKIP_VERIFY=true vault operator init -key-shares=3 -key-threshold=2'
 ```
 
@@ -38,17 +39,17 @@ Pod. Start with `vault-0`, then repeat for `vault-1` and `vault-2` so they can j
 the Raft cluster:
 
 ```sh
-kubectl --context pegasus-non-prod -n vault exec -it vault-0 -- \
+kubectl --context atlantis-vault -n vault exec -it vault-0 -- \
   sh -c 'VAULT_ADDR=https://127.0.0.1:8200 VAULT_SKIP_VERIFY=true vault operator unseal <unseal-key-1>'
 
-kubectl --context pegasus-non-prod -n vault exec -it vault-0 -- \
+kubectl --context atlantis-vault -n vault exec -it vault-0 -- \
   sh -c 'VAULT_ADDR=https://127.0.0.1:8200 VAULT_SKIP_VERIFY=true vault operator unseal <unseal-key-2>'
 ```
 
 Verify:
 
 ```sh
-kubectl --context pegasus-non-prod -n vault exec vault-0 -- \
+kubectl --context atlantis-vault -n vault exec vault-0 -- \
   sh -c 'VAULT_ADDR=https://127.0.0.1:8200 VAULT_SKIP_VERIFY=true vault status'
 ```
 
@@ -61,7 +62,7 @@ this private CA by default; use the port-forward for initial local administratio
 accept the private-CA warning only after verifying the forwarded destination.
 
 ```sh
-kubectl --context pegasus-non-prod -n vault port-forward svc/vault-ui 8200:8200
+kubectl --context atlantis-vault -n vault port-forward svc/vault-ui 8200:8200
 ```
 
 Open `https://localhost:8200` and authenticate with the initial root token only long
@@ -73,128 +74,55 @@ The Longhorn volumes preserve Vault data, but manual-unseal Vault returns sealed
 a restart. Submit two unseal shares to each affected Pod again, then confirm `vault
 status` reports `Sealed: false`.
 
-## Vault audit logging and metrics
+## Enable audit logging
 
-Vault audit logging and telemetry are configured declaratively. The Vault HelmRelease
-mounts the Longhorn-backed audit volume at `/vault/audit`, and the matching OpenTofu
-root creates a file audit device at:
-
-```text
-/vault/audit/audit.log
-```
-
-The same Vault configuration enables the Prometheus endpoint at
-`/v1/sys/metrics`. Prometheus scrapes it through the internal
-`vault-active.vault.svc.cluster.local` Service over HTTPS. TLS verification is skipped
-for this internal scrape because the current Vault certificate is issued by the
-cluster-private CA; use CA-based verification before exposing metrics outside the
-cluster.
-
-The `prometheus-metrics` policy remains available for a future authenticated scrape
-configuration. The current scrape follows the previously tested model with
-`unauthenticated_metrics_access = true`; this does not grant access to Vault secrets.
-Audit logs may contain sensitive request metadata, so restrict access to the audit
-volume and monitor its Longhorn capacity.
-
-## Next configuration step
-
-External Secrets Operator is installed, but no application `SecretStore` is created
-yet. Before creating one, configure Vault's Kubernetes authentication method, a least-
-privilege policy, and a dedicated External Secrets service account/role. This avoids
-committing database or application credentials to Git. Configure Vault Kubernetes
-authentication and the External Secrets role/policy with the matching
-`infrastructure-live/tofu/vault/` OpenTofu root.
-
-Port-forward Vault in one terminal:
+The HelmRelease creates a dedicated Longhorn-backed audit volume mounted at
+`/vault/audit`, but mounting the volume does not enable a Vault audit device. After
+Vault is initialized and unsealed, enable the file audit device once with the initial
+root token:
 
 ```sh
-kubectl --context pegasus-non-prod -n vault port-forward svc/vault-active 8200:8200
+kubectl --context atlantis-vault -n vault exec vault-0 -- \
+  sh -c 'VAULT_ADDR=https://127.0.0.1:8200 VAULT_SKIP_VERIFY=true VAULT_TOKEN=<initial-root-token> vault audit enable file file_path=/vault/audit/audit.log'
 ```
 
-In another terminal, set the bootstrap root token only for this one-time configuration
-run, then apply the non-production Vault root:
+Verify the device and file:
 
 ```sh
-export TF_VAR_vault_token='<initial-root-token>'
+kubectl --context atlantis-vault -n vault exec vault-0 -- \
+  sh -c 'VAULT_ADDR=https://127.0.0.1:8200 VAULT_SKIP_VERIFY=true VAULT_TOKEN=<initial-root-token> vault audit list'
 
-cd ../infrastructure-live/tofu/vault/non-production
-tofu init
-tofu apply
+kubectl --context atlantis-vault -n vault exec vault-0 -- \
+  test -f /vault/audit/audit.log
 ```
 
-The workspace creates the KV v2 `secret/` mount, Kubernetes auth backend, and an
-per-application policy and Kubernetes auth role. Do not grant the ESO controller a
-wildcard policy. Instead, declare each application's namespace, ServiceAccount, and
-single allowed KV-v2 path in the matching `infrastructure-live/tofu/vault/<environment>`
-root:
+Audit logs contain sensitive request metadata. Restrict access to the audit PVC and
+monitor its Longhorn capacity.
 
-```hcl
-app_vault_access = {
-  example-api = {
-    namespace       = "example"
-    service_account = "example-api"
-    secret_path     = "apps/example-api/database"
-  }
-}
-```
+## Verify the private endpoint
 
-This creates the `app-example-api` Vault policy and Kubernetes auth role, allowing
-only `secret/data/apps/example-api/database` to be read. Pair it with a namespaced
-ESO `SecretStore` that uses the `example-api` ServiceAccount. A shared store would
-weaken the application isolation boundary.
-
-Repeat this pattern with a different namespace, ServiceAccount, Vault path, policy,
-and namespaced `SecretStore` for each application.
-
-## Grafana database bootstrap
-
-Grafana uses a CloudNative-PG cluster named `grafana` in the `observability`
-namespace. Its credentials are managed by the non-production OpenTofu root at
-`infrastructure-live/tofu/vault/non-production/`, written to the app-specific Vault
-path `secret/apps/grafana/database`, and synchronized by the `grafana-vault`
-SecretStore.
-
-Provide the four sensitive values through environment variables. Do not commit them
-or put them in a `.tfvars` file:
+Atlantis exposes Vault through Envoy Gateway with TLS passthrough. Private DNS must
+resolve `vault.ninhu.xyz` to `192.168.89.131`. Vault terminates TLS with the
+Cert-Manager-issued certificate.
 
 ```sh
-export TF_VAR_grafana_database_username=grafana
-export TF_VAR_grafana_database_password='<database-password>'
-export TF_VAR_grafana_admin_username=admin
-export TF_VAR_grafana_admin_password='<grafana-admin-password>'
-
-cd infrastructure-live/tofu/vault/non-production
-export TF_VAR_vault_token='<opentofu-automation-token>'
-tofu apply
+getent hosts vault.ninhu.xyz
+curl --cacert vault-ca.crt https://vault.ninhu.xyz/v1/sys/health
 ```
 
-The OpenTofu resource writes the KV v2 record without storing the values in Git. The
-`app-grafana` policy and Kubernetes-auth role grant the Grafana ServiceAccount access
-only to this exact path.
+A sealed Vault normally returns HTTP `503`; an uninitialized Vault may return `501`.
+Either response confirms DNS, Gateway routing, and TLS when the certificate verifies.
 
-The Vault CA is also synchronized declaratively. `vault-ca-sync.yaml` grants the ESO
-ServiceAccount read-only access to only `vault/vault-ca`, then creates
-`observability/vault-ca` containing only `ca.crt`. No manual Secret copy is needed.
+## Next configuration stage
 
-After the changes are pushed, reconcile Flux:
+Do not enable `apps/base/vault-integrations` during initial bootstrap. Atlantis does
+not need an application `ExternalSecret` to run Vault.
 
-```sh
-flux --context pegasus-non-prod reconcile kustomization apps --with-source
-```
+Before Pegasus or Galactica consume secrets, create separate Kubernetes auth mounts
+or otherwise distinct auth configuration for each workload cluster. Each application
+must receive a least-privilege policy for one exact KV-v2 path and a namespaced
+`SecretStore`; do not grant the External Secrets controller a wildcard policy.
 
-Verify the CA sync, generated credentials, CNPG cluster, and Grafana:
-
-```sh
-kubectl --context pegasus-non-prod -n observability \
-  get clustersecretstore,secretstore,externalsecret,secret,pods,pvc
-```
-
-Expected results include `vault-ca-source` and `grafana-vault` ready,
-`grafana-database-credentials` synchronized, `cluster/grafana` ready, and the
-Grafana pod running. If the ExternalSecret needs an immediate retry, annotate it:
-
-```sh
-kubectl --context pegasus-non-prod -n observability \
-  annotate externalsecret grafana-database-credentials \
-  force-sync="$(date +%s)" --overwrite
-```
+The existing `infrastructure-live/tofu/vault/production` and `non-production` roots
+still contain workload-cluster assumptions. Review and refactor them for remote
+Atlantis authentication before applying them to this Vault instance.

@@ -10,3 +10,5 @@ spec:
       defaultDataPath: /var/lib/longhorn
     persistence:
       defaultClassReplicaCount: 3
+    csi:
+      kubeletRootDir: /var/lib/kubelet
