@@ -5,8 +5,19 @@ metadata:
   namespace: cert-manager
 spec:
   values:
-    replicaCount: 2
+    replicaCount: 1
+    tolerations: &controlPlaneTolerations
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
     webhook:
-      replicaCount: 2
+      replicaCount: 1
+      tolerations: *controlPlaneTolerations
     cainjector:
-      replicaCount: 2
+      replicaCount: 1
+      tolerations: *controlPlaneTolerations
+    startupapicheck:
+      tolerations: *controlPlaneTolerations

@@ -5,6 +5,15 @@ service runs on Atlantis and is consumed remotely through private TLS at `vault.
 
 ## Reconciliation Order
 
+The initial rebuild intentionally activates only the Atlantis-proven baseline:
+
+```text
+flux-system -> infrastructure -> networking -> observability collectors
+```
+
+CNPG/databases and remote Vault secrets are kept out of the Galactica root until this baseline
+is healthy. Add those waves one at a time after a successful clean rebuild.
+
 ```text
 infrastructure
   -> cert-manager, External Secrets, Longhorn, metrics-server, Reloader
@@ -49,3 +58,4 @@ The internal Gateway uses a separate service VIP from the Kubernetes API VIP:
 192.168.89.120  Kubernetes API
 192.168.89.121  Galactica internal Gateway
 ```
+

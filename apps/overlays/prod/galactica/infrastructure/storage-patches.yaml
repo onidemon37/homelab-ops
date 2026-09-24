@@ -6,11 +6,11 @@ metadata:
 spec:
   values:
     defaultSettings:
-      defaultReplicaCount: 3
+      defaultReplicaCount: 2
       defaultDataPath: /var/lib/longhorn
       taintToleration: "node-role.kubernetes.io/control-plane:NoSchedule;node-role.kubernetes.io/master:NoSchedule"
     persistence:
-      defaultClassReplicaCount: 3
+      defaultClassReplicaCount: 2
     csi:
       kubeletRootDir: /var/lib/kubelet
     tolerations: &controlPlaneTolerations

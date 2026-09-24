@@ -5,49 +5,21 @@ metadata:
   namespace: observability
 spec:
   values:
+    controller:
+      type: deployment
+      replicas: 1
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
     alloy:
-      mounts:
-        varlog: true
       configMap:
         create: true
         content: |
-          discovery.kubernetes "pods" {
-            role = "pod"
-          }
-
-          discovery.relabel "pod_logs" {
-            targets = discovery.kubernetes.pods.targets
-
-            rule {
-              source_labels = ["__meta_kubernetes_namespace"]
-              target_label  = "namespace"
-            }
-
-            rule {
-              source_labels = ["__meta_kubernetes_pod_name"]
-              target_label  = "pod"
-            }
-
-            rule {
-              source_labels = ["__meta_kubernetes_pod_container_name"]
-              target_label  = "container"
-            }
-
-            rule {
-              source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
-              separator     = "/"
-              target_label  = "__path__"
-              replacement   = "/var/log/pods/*$1/*.log"
-            }
-          }
-
-          loki.source.kubernetes "pods" {
-            targets    = discovery.relabel.pod_logs.output
-            forward_to = [loki.write.default.receiver]
-          }
-
-          loki.write "default" {
-            endpoint {
-              url = "http://loki.observability.svc.cluster.local:3100/loki/api/v1/push"
-            }
+          logging {
+            level  = "info"
+            format = "logfmt"
           }
