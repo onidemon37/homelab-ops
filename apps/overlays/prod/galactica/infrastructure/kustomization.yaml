@@ -4,6 +4,9 @@ resources:
   - ../../../../base/kube-system
   - ../../../../base/cert-manager
   - ../../../../base/storage
+  - ../../../../base/external-secrets
+
 patches:
   - path: cert-manager-patches.yaml
   - path: storage-patches.yaml
+  - path: external-secrets-patches.yaml
