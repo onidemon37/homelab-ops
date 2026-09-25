@@ -32,6 +32,6 @@ spec:
     provider: github
     url: "https://github.com/onidemon37/homelab-ops"
     ref: "refs/heads/main"
-    path: "clusters/non-prod"
+    path: "clusters/non-prod/atlantis"
     # References the GitHub App Secret reconciled by terraform/non-prod.
     pullSecret: flux-system
