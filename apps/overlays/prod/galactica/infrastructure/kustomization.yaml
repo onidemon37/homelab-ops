@@ -3,5 +3,7 @@ kind: Kustomization
 resources:
   - ../../../../base/kube-system
   - ../../../../base/cert-manager
+  - ../../../../base/storage
 patches:
   - path: cert-manager-patches.yaml
+  - path: storage-patches.yaml
