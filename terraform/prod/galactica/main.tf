@@ -34,7 +34,7 @@ module "flux_operator_bootstrap" {
   job = {
     tolerations = local.control_plane_tolerations
   }
-  
+
   # Secret content is hashed, not stored in Terraform state (see module docs).
   managed_resources = {
     secrets_yaml = yamlencode({

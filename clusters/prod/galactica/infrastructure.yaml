@@ -8,7 +8,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m
-  path: ./apps/overlays/prod/atlantis/infrastructure
+  path: ./apps/overlays/prod/galactica/infrastructure
   prune: true
   wait: true
   timeout: 15m
