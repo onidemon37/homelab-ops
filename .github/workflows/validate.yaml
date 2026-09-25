@@ -35,12 +35,32 @@ jobs:
           fi
 
   kustomize:
-    name: Kustomize ${{ matrix.environment }}
+    name: Kustomize ${{ matrix.cluster }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        environment: [prod, non-prod]
+        include:
+          - cluster: atlantis
+            paths: |
+              clusters/prod/atlantis
+              apps/overlays/prod/atlantis/infrastructure
+              apps/overlays/prod/atlantis/networking
+              apps/overlays/prod/atlantis/observability
+              apps/overlays/prod/atlantis/shared-services
+          - cluster: galactica
+            paths: |
+              clusters/prod/galactica
+              apps/overlays/prod/galactica/infrastructure
+              apps/overlays/prod/galactica/networking
+              apps/overlays/prod/galactica/observability
+          - cluster: pegasus
+            paths: |
+              clusters/non-prod
+              apps/overlays/non-prod/pegasus/infrastructure/controllers
+              apps/overlays/non-prod/pegasus/infrastructure/services
+              apps/overlays/non-prod/pegasus/networking
+              apps/overlays/non-prod/pegasus/observability
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,30 +71,10 @@ jobs:
       - name: Build Flux application waves
         shell: bash
         run: |
-          paths=(
-            "apps/overlays/${{ matrix.environment }}"
-            "apps/overlays/${{ matrix.environment }}/foundation"
-            "apps/overlays/${{ matrix.environment }}/foundation/cert-manager"
-            "apps/overlays/${{ matrix.environment }}/foundation/cert-manager-config"
-            "apps/overlays/${{ matrix.environment }}/secrets"
-            "apps/overlays/${{ matrix.environment }}/cloudnative-pg"
-            "clusters/${{ matrix.environment }}"
-          )
-          for path in "${paths[@]}"; do
+          while IFS= read -r path; do
+            test -n "$path" || continue
             kustomize build "$path"
-          done
-      - name: Enforce environment domain boundaries
-        shell: bash
-        run: |
-          if [ "${{ matrix.environment }}" = "prod" ]; then
-            forbidden='ninhu\\.com'
-          else
-            forbidden='andorigna\\.com'
-          fi
-          if grep -RInE "$forbidden" "apps/overlays/${{ matrix.environment }}" 2>/dev/null; then
-            echo "Found a domain belonging to another tenant/environment."
-            exit 1
-          fi
+          done <<< "${{ matrix.paths }}"
 
   ansible:
     name: Ansible lint

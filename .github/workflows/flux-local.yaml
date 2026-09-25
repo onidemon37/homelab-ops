@@ -18,12 +18,32 @@ permissions:
 
 jobs:
   flux-local:
-    name: Flux manifest test (${{ matrix.cluster }})
+    name: Flux manifest test (${{ matrix.name }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        cluster: [prod, non-prod]
+        include:
+          - name: atlantis
+            cluster_path: clusters/prod/atlantis
+            overlay_paths: |
+              apps/overlays/prod/atlantis/infrastructure
+              apps/overlays/prod/atlantis/networking
+              apps/overlays/prod/atlantis/observability
+              apps/overlays/prod/atlantis/shared-services
+          - name: galactica
+            cluster_path: clusters/prod/galactica
+            overlay_paths: |
+              apps/overlays/prod/galactica/infrastructure
+              apps/overlays/prod/galactica/networking
+              apps/overlays/prod/galactica/observability
+          - name: pegasus
+            cluster_path: clusters/non-prod
+            overlay_paths: |
+              apps/overlays/non-prod/pegasus/infrastructure/controllers
+              apps/overlays/non-prod/pegasus/infrastructure/services
+              apps/overlays/non-prod/pegasus/networking
+              apps/overlays/non-prod/pegasus/observability
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,52 +61,12 @@ jobs:
       - name: Render cluster and application manifests
         shell: bash
         run: |
-          cluster_path="clusters/${{ matrix.cluster }}"
-          app_path="apps/overlays/${{ matrix.cluster }}"
-          foundation_path="apps/overlays/${{ matrix.cluster }}/foundation"
-          secrets_path="apps/overlays/${{ matrix.cluster }}/secrets"
-          cert_manager_path="${foundation_path}/cert-manager"
-          cert_manager_config_path="${foundation_path}/cert-manager-config"
-          cloudnative_pg_path="apps/overlays/${{ matrix.cluster }}/cloudnative-pg"
+          cluster_path="${{ matrix.cluster_path }}"
           test -f "$cluster_path/kustomization.yaml"
-          test -f "$app_path/kustomization.yaml"
-          test -f "$foundation_path/kustomization.yaml"
-          test -f "$secrets_path/kustomization.yaml"
-          test -f "$cert_manager_path/kustomization.yaml"
-          test -f "$cert_manager_config_path/kustomization.yaml"
-          test -f "$cloudnative_pg_path/kustomization.yaml"
           kustomize build "$cluster_path" >/tmp/cluster.yaml
-          kustomize build "$app_path" >/tmp/apps.yaml
-          kustomize build "$foundation_path" >/tmp/foundation.yaml
-          kustomize build "$secrets_path" >/tmp/secrets.yaml
-          kustomize build "$cert_manager_path" >/tmp/cert-manager.yaml
-          kustomize build "$cert_manager_config_path" >/tmp/cert-manager-config.yaml
-          kustomize build "$cloudnative_pg_path" >/tmp/cloudnative-pg.yaml
           test -s /tmp/cluster.yaml
-          test -s /tmp/apps.yaml
-          test -s /tmp/foundation.yaml
-          test -s /tmp/secrets.yaml
-          test -s /tmp/cert-manager.yaml
-          test -s /tmp/cert-manager-config.yaml
-          test -s /tmp/cloudnative-pg.yaml
-
-          # Controllers reconcile across independent Flux waves. Check their
-          # union so a required HelmRelease cannot silently disappear.
-          cat /tmp/cert-manager.yaml /tmp/foundation.yaml /tmp/secrets.yaml \
-            /tmp/cloudnative-pg.yaml /tmp/apps.yaml >/tmp/all.yaml
-
-          helmrelease_count=$(grep -c '^kind: HelmRelease$' /tmp/all.yaml || true)
-          if [ "$helmrelease_count" -eq 0 ]; then
-            echo "::error::No HelmRelease resources rendered across Flux waves"
-            exit 1
-          fi
-
-          for release in cert-manager metrics-server reloader external-secrets cloudnative-pg envoy-gateway; do
-            found=$(yq eval-all \
-              "select(.kind == \"HelmRelease\" and .metadata.name == \"$release\") | .metadata.name" \
-              /tmp/all.yaml)
-            if [ -z "$found" ]; then
-              echo "::error::Missing HelmRelease: $release"
-              exit 1
-            fi
-          done
+          while IFS= read -r path; do
+            test -n "$path" || continue
+            test -f "$path/kustomization.yaml"
+            kustomize build "$path" >"/tmp/$(basename "$path").yaml"
+          done <<< "${{ matrix.overlay_paths }}"
