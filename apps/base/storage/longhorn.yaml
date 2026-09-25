@@ -5,6 +5,7 @@ metadata:
   namespace: longhorn-system
 spec:
   interval: 30m
+  timeout: 15m
   install:
     createNamespace: false
     remediation:
