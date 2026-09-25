@@ -5,8 +5,8 @@ metadata:
   namespace: cert-manager
 spec:
   values:
-    replicaCount: 1
+    replicaCount: 3
     webhook:
-      replicaCount: 1
+      replicaCount: 3
     cainjector:
-      replicaCount: 1
+      replicaCount: 3

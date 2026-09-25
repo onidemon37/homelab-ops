@@ -1,3 +1,6 @@
+# Foundation only: controllers and storage required before Vault.
+# Vault, issuers, observability, and application secrets are intentionally
+# excluded until this foundation reconciliation is healthy.
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -5,7 +8,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m
-  path: ./apps/overlays/prod/galactica/infrastructure
+  path: ./apps/overlays/prod/atlantis/infrastructure
   prune: true
   wait: true
   timeout: 15m

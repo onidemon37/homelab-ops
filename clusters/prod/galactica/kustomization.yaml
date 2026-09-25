@@ -3,5 +3,7 @@ kind: Kustomization
 resources:
   - flux-system
   - infrastructure.yaml
-  - networking.yaml
-  - observability.yaml
+  #- networking.yaml
+  # - secrets.yaml
+  #- observability.yaml
+  # - databases.yaml
