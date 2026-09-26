@@ -6,5 +6,5 @@ resources:
   - networking-controller.yaml
   - networking.yaml
   # - secrets.yaml
-  #- observability.yaml
-  # - databases.yaml
+  - databases.yaml
+  - observability.yaml

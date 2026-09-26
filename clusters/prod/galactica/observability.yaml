@@ -6,6 +6,7 @@ metadata:
 spec:
   dependsOn:
     - name: networking
+    - name: databases
   interval: 10m
   path: ./apps/overlays/prod/galactica/observability
   prune: true
