@@ -26,7 +26,7 @@ The Kube-VIP static-pod configuration is managed by the Atlantis Ansible bootstr
 
 The overlay contains:
 
-- `envoy-gateway-patches.yaml`: control-plane tolerations for the Envoy controller and certgen Job
+- `../networking-controller/envoy-gateway-patches.yaml`: control-plane tolerations for the Envoy controller and certgen Job
 - `namespace.yaml`: the `networking` namespace
 - `internal-gateway.yaml`: `EnvoyProxy`, `GatewayClass`, and `Gateway`
 

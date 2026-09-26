@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - ../../../../base/envoy-gateway
   - namespace.yaml
-  - internal-gateway.yaml
-  - longhorn-route.yaml
-  - longhorn-reference-grant.yaml
+patches:
+  - path: envoy-gateway-patches.yaml
