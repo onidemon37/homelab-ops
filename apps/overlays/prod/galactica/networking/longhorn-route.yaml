@@ -1,0 +1,16 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: longhorn-ui
+  namespace: networking
+spec:
+  parentRefs:
+    - name: internal
+      sectionName: http
+  hostnames:
+    - longhorn.galactica.ninhu.xyz
+  rules:
+    - backendRefs:
+        - name: longhorn-frontend
+          namespace: longhorn-system
+          port: 80

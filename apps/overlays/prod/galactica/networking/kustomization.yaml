@@ -3,3 +3,5 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - internal-gateway.yaml
+  - longhorn-route.yaml
+  - longhorn-reference-grant.yaml
