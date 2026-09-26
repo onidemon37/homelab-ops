@@ -8,7 +8,7 @@ spec:
     - name: internal
       sectionName: http
   hostnames:
-    - longhorn.galactica.ninhu.xyz
+    - longhorn.ninhu.xyz
   rules:
     - backendRefs:
         - name: longhorn-frontend
