@@ -115,14 +115,4 @@ Either response confirms DNS, Gateway routing, and TLS when the certificate veri
 
 ## Next configuration stage
 
-Do not enable `apps/base/vault-integrations` during initial bootstrap. Atlantis does
-not need an application `ExternalSecret` to run Vault.
-
-Before Pegasus or Galactica consume secrets, create separate Kubernetes auth mounts
-or otherwise distinct auth configuration for each workload cluster. Each application
-must receive a least-privilege policy for one exact KV-v2 path and a namespaced
-`SecretStore`; do not grant the External Secrets controller a wildcard policy.
-
-The existing `infrastructure-live/tofu/vault/production` and `non-production` roots
-still contain workload-cluster assumptions. Review and refactor them for remote
-Atlantis authentication before applying them to this Vault instance.
+Do not enable `apps/base/vault-integrations` during initial bootstrap. Atlgi
