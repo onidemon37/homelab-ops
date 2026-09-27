@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - ../../../../base/observability-collectors
   - ../../../../base/prometheus-stack
+  - dashboard-proxmox.yaml
 patches:
   - path: alloy-patches.yaml
   - path: kube-state-metrics-patches.yaml
