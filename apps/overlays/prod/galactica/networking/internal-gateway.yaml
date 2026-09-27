@@ -43,3 +43,14 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
+    - name: https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.andorigna.com"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: observability-tls
+      allowedRoutes:
+        namespaces:
+          from: Same

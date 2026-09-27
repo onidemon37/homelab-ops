@@ -5,6 +5,7 @@ metadata:
   name: kube-prometheus-stack
   namespace: observability
 spec:
+  interval: 30m
   values:
     kubeControllerManager:
       enabled: false
@@ -25,6 +26,10 @@ spec:
           - job_name: proxmox-ve-exporter
             scrape_interval: 30s
             scrape_timeout: 10s
+            metrics_path: /pve
+            params:
+              target:
+                - hyperion.ninhu.xyz
             static_configs:
               - targets:
                   - hyperion.ninhu.xyz:9221

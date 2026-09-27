@@ -1,7 +1,7 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: grafana
+  name: grafana-internal
   namespace: networking
 spec:
   parentRefs:
@@ -18,7 +18,24 @@ spec:
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: prometheus
+  name: grafana-external
+  namespace: networking
+spec:
+  parentRefs:
+    - name: internal
+      sectionName: https
+  hostnames:
+    - grafana.andorigna.com
+  rules:
+    - backendRefs:
+        - name: kube-prometheus-stack-grafana
+          namespace: observability
+          port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: prometheus-internal
   namespace: networking
 spec:
   parentRefs:
@@ -26,6 +43,23 @@ spec:
       sectionName: http
   hostnames:
     - prometheus.galactica.ninhu.xyz
+  rules:
+    - backendRefs:
+        - name: kube-prometheus-stack-prometheus
+          namespace: observability
+          port: 9090
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: prometheus-external
+  namespace: networking
+spec:
+  parentRefs:
+    - name: internal
+      sectionName: https
+  hostnames:
+    - prometheus.andorigna.com
   rules:
     - backendRefs:
         - name: kube-prometheus-stack-prometheus
