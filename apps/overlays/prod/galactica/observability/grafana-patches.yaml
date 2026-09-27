@@ -6,4 +6,4 @@ metadata:
 spec:
   values:
     grafana:
-      enabled: false
+      enabled: true
