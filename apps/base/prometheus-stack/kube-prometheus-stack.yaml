@@ -48,8 +48,15 @@ spec:
         GF_DATABASE_HOST: grafana-rw.observability.svc.cluster.local
         GF_DATABASE_NAME: grafana
         GF_DATABASE_SSL_MODE: disable
-      envFromSecrets:
-        - name: grafana-database-credentials
+      envValueFrom:
+        GF_DATABASE_USER:
+          secretKeyRef:
+            name: grafana-database-credentials
+            key: GF_DATABASE_USER
+        GF_DATABASE_PASSWORD:
+          secretKeyRef:
+            name: grafana-database-credentials
+            key: GF_DATABASE_PASSWORD
       sidecar:
         dashboards:
           enabled: true
