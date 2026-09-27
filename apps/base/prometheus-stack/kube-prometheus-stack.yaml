@@ -5,6 +5,7 @@ metadata:
   namespace: observability
 spec:
   interval: 30m
+  timeout: 15m
   dependsOn:
     - name: longhorn
       namespace: longhorn-system
@@ -67,16 +68,6 @@ spec:
         datasources.yaml:
           apiVersion: 1
           datasources:
-            - name: Prometheus
-              uid: prometheus
-              type: prometheus
-              url: >-
-                http://kube-prometheus-stack-prometheus.observability.svc.cluster.local:9090
-              access: proxy
-              isDefault: true
-              editable: false
-              jsonData:
-                timeInterval: 60s
             - name: Loki
               uid: loki
               type: loki
