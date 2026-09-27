@@ -6,6 +6,14 @@ metadata:
   namespace: observability
 spec:
   values:
+    kubeControllerManager:
+      enabled: false
+    kubeEtcd:
+      enabled: false
+    kubeProxy:
+      enabled: false
+    kubeScheduler:
+      enabled: false
     prometheus:
       prometheusSpec:
         replicas: 2
