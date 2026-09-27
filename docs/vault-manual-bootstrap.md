@@ -7,6 +7,35 @@ required because this homelab does not have an external KMS or HSM.
 This guide uses the `atlantis-vault` kubeconfig context. Atlantis is the dedicated
 Vault cluster; Pegasus and Galactica consume it remotely and do not host Vault.
 
+## Deployment Order
+
+Atlantis must be deployed before Galactica. Atlantis supplies the Vault service, its internal
+Gateway, and the Cert-Manager-issued TLS certificate for `vault.ninhu.xyz`. Do not bootstrap
+Galactica's remote SecretStores first; they cannot validate until Atlantis is reachable and Vault
+has been initialized, unsealed, and configured.
+
+The required order is:
+
+1. Deploy Atlantis and wait for its Flux foundation, internal Gateway, Vault, and Certificate.
+2. Initialize and unseal Vault, then configure the Galactica Kubernetes auth mount and roles.
+3. Verify private DNS, the Vault endpoint, and the CA used by Galactica's `vault-ca` Secret.
+4. Deploy or recreate Galactica, regenerate its reviewer JWT, and reconcile `rbac` before `secrets`.
+
+The Vault KV data survives Galactica rebuilds because it lives in Atlantis. The Kubernetes
+reviewer JWT does not: generate a new one for every rebuilt Galactica cluster and update the
+Vault auth backend configuration.
+
+Use the infrastructure helper for token rotation or after rebuilding Galactica. It generates the
+current Galactica CA and reviewer JWT, increments the write-only token version, applies the Vault
+configuration, refreshes both SecretStores, and reconciles the Flux secrets wave:
+
+```sh
+/home/onidemon/Development/infrastructure-live/scripts/rotate-galactica-vault-auth.sh
+```
+
+Set `GALACTICA_TOKEN_REVIEWER_JWT_VERSION` explicitly only when a controlled version is needed;
+the helper otherwise uses the current Unix timestamp to guarantee a new write-only version.
+
 ## Verify the Flux deployment
 
 ```sh

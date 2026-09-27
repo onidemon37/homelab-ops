@@ -5,3 +5,5 @@ resources:
   - internal-gateway.yaml
   - longhorn-route.yaml
   - longhorn-reference-grant.yaml
+  - observability-routes.yaml
+  - observability-reference-grant.yaml

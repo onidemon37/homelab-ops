@@ -35,13 +35,16 @@ jobs:
             cluster_path: clusters/prod/galactica
             overlay_paths: |
               apps/overlays/prod/galactica/infrastructure
+              apps/overlays/prod/galactica/cnpg
+              apps/overlays/prod/galactica/databases
               apps/overlays/prod/galactica/networking
               apps/overlays/prod/galactica/observability
           - name: pegasus
-            cluster_path: clusters/non-prod
+            cluster_path: clusters/non-prod/atlantis
             overlay_paths: |
               apps/overlays/non-prod/pegasus/infrastructure/controllers
               apps/overlays/non-prod/pegasus/infrastructure/services
+              apps/overlays/non-prod/pegasus/databases
               apps/overlays/non-prod/pegasus/networking
               apps/overlays/non-prod/pegasus/observability
     steps:

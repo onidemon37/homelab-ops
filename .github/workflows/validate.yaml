@@ -52,13 +52,16 @@ jobs:
             paths: |
               clusters/prod/galactica
               apps/overlays/prod/galactica/infrastructure
+              apps/overlays/prod/galactica/cnpg
+              apps/overlays/prod/galactica/databases
               apps/overlays/prod/galactica/networking
               apps/overlays/prod/galactica/observability
           - cluster: pegasus
             paths: |
-              clusters/non-prod
+              clusters/non-prod/atlantis
               apps/overlays/non-prod/pegasus/infrastructure/controllers
               apps/overlays/non-prod/pegasus/infrastructure/services
+              apps/overlays/non-prod/pegasus/databases
               apps/overlays/non-prod/pegasus/networking
               apps/overlays/non-prod/pegasus/observability
     steps:
