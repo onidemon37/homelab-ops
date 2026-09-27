@@ -4,6 +4,7 @@ resources:
   - flux-system
   - infrastructure.yaml
   - rbac.yaml
+  - cnpg.yaml
   - networking-controller.yaml
   - networking.yaml
   - secrets.yaml

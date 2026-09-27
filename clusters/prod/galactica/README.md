@@ -3,6 +3,23 @@
 Galactica is the production workload cluster. It does not deploy Vault; the authoritative Vault
 service runs on Atlantis and is consumed remotely through private TLS at `vault.ninhu.xyz`.
 
+## Deployment Prerequisite
+
+Deploy Atlantis before Galactica. Atlantis provides the Vault service, its internal Gateway, and
+the Cert-Manager-issued certificate for `vault.ninhu.xyz`. Galactica's remote SecretStores cannot
+become Ready until Atlantis is running, Vault is initialized and unsealed, private DNS resolves
+the Vault hostname, and the Vault CA is available in the Galactica secrets overlay.
+
+Recommended order:
+
+1. Bootstrap Atlantis and wait for its Flux foundation, Gateway, Vault, and certificate.
+2. Initialize and unseal Vault, then configure the Galactica Kubernetes auth mount and roles.
+3. Confirm `https://vault.ninhu.xyz` is reachable from the private network and verify the CA.
+4. Bootstrap Galactica and wait for `rbac` before enabling its `secrets` wave.
+
+Destroying and recreating Galactica does not require recreating Atlantis or the Vault KV data, but
+the Galactica Kubernetes reviewer JWT must be regenerated and applied to Vault after each rebuild.
+
 ## Reconciliation Order
 
 The initial rebuild intentionally activates only the Atlantis-proven baseline:
