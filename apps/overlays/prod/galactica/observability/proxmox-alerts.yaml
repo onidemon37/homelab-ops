@@ -1,0 +1,69 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: proxmox-alerts
+  namespace: observability
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: proxmox.availability
+      rules:
+        - alert: ProxmoxExporterDown
+          expr: up{job="proxmox-ve-exporter"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Proxmox exporter is unavailable
+            description: Prometheus has been unable to scrape the Proxmox VE exporter for 5 minutes.
+        - alert: AtlantisControlPlaneVMDown
+          expr: (pve_up{id=~"qemu/.*"} == bool 0) and on(id) pve_guest_info{type="qemu", name=~"atlantis-cp-.*"}
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: Atlantis control-plane VM is powered off
+            description: Proxmox reports Atlantis control-plane VM {{ $labels.name }} ({{ $labels.id }}) as not running.
+        - alert: ProxmoxGuestWithoutBackupCoverage
+          expr: pve_not_backed_up_info == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Proxmox guest has no backup coverage
+            description: Proxmox guest {{ $labels.id }} is not covered by a backup job.
+    - name: proxmox.capacity
+      rules:
+        - alert: ProxmoxStoragePoolUsageHigh
+          expr: 100 * pve_disk_usage_bytes{id=~"storage/.*"} / pve_disk_size_bytes{id=~"storage/.*"} > 85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: Proxmox storage pool usage is above 85%
+            description: Storage {{ $labels.id }} is {{ $value | printf "%.1f" }}% used.
+        - alert: ProxmoxStoragePoolUsageCritical
+          expr: 100 * pve_disk_usage_bytes{id=~"storage/.*"} / pve_disk_size_bytes{id=~"storage/.*"} > 95
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Proxmox storage pool usage is above 95%
+            description: Storage {{ $labels.id }} is {{ $value | printf "%.1f" }}% used.
+        - alert: ProxmoxNodeMemoryUsageHigh
+          expr: 100 * pve_memory_usage_bytes{id=~"node/.*"} / pve_memory_size_bytes{id=~"node/.*"} > 90
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: Proxmox node memory usage is above 90%
+            description: Node {{ $labels.id }} is using {{ $value | printf "%.1f" }}% of memory.
+        - alert: ProxmoxNodeCPUUsageHigh
+          expr: 100 * pve_cpu_usage_ratio{id=~"node/.*"} > 90
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Proxmox node CPU usage is above 90%
+            description: Node {{ $labels.id }} CPU usage is {{ $value | printf "%.1f" }}%.

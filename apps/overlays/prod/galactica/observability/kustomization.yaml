@@ -4,6 +4,7 @@ resources:
   - ../../../../base/observability-collectors
   - ../../../../base/prometheus-stack
   - dashboard-proxmox.yaml
+  - proxmox-alerts.yaml
 patches:
   - path: alloy-patches.yaml
   - path: kube-state-metrics-patches.yaml
