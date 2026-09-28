@@ -30,10 +30,22 @@ spec:
         kind: HelmRepository
         name: prometheus-community
         namespace: flux-system
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              version: v1
+              kind: ConfigMap
+              name: ".*-nodes"
+              namespace: observability
+            patch: |
+              - op: replace
+                path: /metadata/annotations/grafana_folder
+                value: Node Exporter
   values:
     grafana:
       enabled: true
-      defaultDashboardsEnabled: false
+      defaultDashboardsEnabled: true
       serviceMonitor:
         enabled: true
         path: /metrics
@@ -64,6 +76,9 @@ spec:
           label: grafana_dashboard
           labelValue: "1"
           searchNamespace: ALL
+          folderAnnotation: grafana_folder
+          annotations:
+            grafana_folder: kube-state-metrics
       datasources:
         defaultDatasourceEnabled: false
         datasources.yaml:
@@ -102,3 +117,9 @@ spec:
         accessModes:
           - ReadWriteOnce
         size: 5Gi
+    nodeExporter:
+      operatingSystems:
+        aix:
+          enabled: false
+        darwin:
+          enabled: false
