@@ -111,6 +111,156 @@ data:
             "targets": [{"expr": "100 * pve_disk_usage_bytes{id=~\"qemu/.*\"} / pve_disk_size_bytes{id=~\"qemu/.*\"} * on(id) group_left(name,node) pve_guest_info", "legendFormat": "{{name}} ({{node}})", "refId": "A"}],
             "title": "VM root disk utilization",
             "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "fieldConfig": {"defaults": {"unit": "short", "mappings": []}, "overrides": []},
+            "gridPos": {"h": 4, "w": 6, "x": 0, "y": 37},
+            "id": 11,
+            "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
+            "targets": [{"expr": "count(pve_up{id=~\"qemu/.*\"} == 0)", "instant": true, "refId": "A"}],
+            "title": "Stopped VMs",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "fieldConfig": {"defaults": {"unit": "short", "mappings": []}, "overrides": []},
+            "gridPos": {"h": 4, "w": 6, "x": 6, "y": 37},
+            "id": 12,
+            "options": {"colorMode": "background", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
+            "targets": [{"expr": "pve_not_backed_up_total", "instant": true, "refId": "A"}],
+            "title": "Guests without backup coverage",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "fieldConfig": {"defaults": {"unit": "short", "mappings": []}, "overrides": []},
+            "gridPos": {"h": 4, "w": 6, "x": 12, "y": 37},
+            "id": 13,
+            "options": {"colorMode": "value", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
+            "targets": [{"expr": "increase(pve_request_errors_total[1h])", "instant": true, "refId": "A"}],
+            "title": "Exporter API errors (1h)",
+            "type": "stat"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "fieldConfig": {"defaults": {"unit": "short", "mappings": []}, "overrides": []},
+            "gridPos": {"h": 4, "w": 6, "x": 18, "y": 37},
+            "id": 14,
+            "options": {"showHeader": true, "cellHeight": "sm"},
+            "targets": [{"expr": "pve_subscription_status", "format": "table", "instant": true, "refId": "A"}],
+            "title": "Proxmox subscription status",
+            "type": "table"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "fieldConfig": {"defaults": {"unit": "short", "mappings": []}, "overrides": []},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 41},
+            "id": 15,
+            "options": {"showHeader": true, "cellHeight": "sm"},
+            "targets": [{"expr": "pve_guest_info{type=\"qemu\"} and on(id) (pve_up{id=~\"qemu/.*\"} == 0)", "format": "table", "instant": true, "refId": "A"}],
+            "title": "Stopped virtual machines",
+            "type": "table"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "fieldConfig": {"defaults": {"unit": "short", "mappings": []}, "overrides": []},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 41},
+            "id": 16,
+            "options": {"showHeader": true, "cellHeight": "sm"},
+            "targets": [{"expr": "pve_not_backed_up_info * on(id) group_left(name,node,type) pve_guest_info", "format": "table", "instant": true, "refId": "A"}],
+            "title": "Guests without backup coverage",
+            "type": "table"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}, "overrides": []},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 49},
+            "id": 17,
+            "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}},
+            "targets": [{"expr": "100 * pve_memory_usage_bytes{id=~\"qemu/.*\"} / pve_memory_size_bytes{id=~\"qemu/.*\"} * on(id) group_left(name,node) pve_guest_info", "legendFormat": "{{name}} ({{node}})", "refId": "A"}],
+            "title": "VM memory utilization",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "fieldConfig": {"defaults": {"unit": "dtdhms", "mappings": []}, "overrides": []},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 49},
+            "id": 18,
+            "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}},
+            "targets": [{"expr": "pve_uptime_seconds{id=~\"node/.*\"} * on(id) group_left(name) pve_node_info", "legendFormat": "{{name}}", "refId": "A"}],
+            "title": "Proxmox node uptime",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "fieldConfig": {"defaults": {"unit": "Bps", "mappings": []}, "overrides": []},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 57},
+            "id": 19,
+            "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}},
+            "targets": [{"expr": "rate(pve_network_receive_bytes_total{id=~\"qemu/.*\"}[5m]) * on(id) group_left(name,node) pve_guest_info", "legendFormat": "{{name}} receive", "refId": "A"}],
+            "title": "VM network receive rate",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "fieldConfig": {"defaults": {"unit": "Bps", "mappings": []}, "overrides": []},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 57},
+            "id": 20,
+            "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}},
+            "targets": [{"expr": "rate(pve_network_transmit_bytes_total{id=~\"qemu/.*\"}[5m]) * on(id) group_left(name,node) pve_guest_info", "legendFormat": "{{name}} transmit", "refId": "A"}],
+            "title": "VM network transmit rate",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "fieldConfig": {"defaults": {"unit": "Bps", "mappings": []}, "overrides": []},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 65},
+            "id": 21,
+            "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}},
+            "targets": [{"expr": "rate(pve_disk_read_bytes_total{id=~\"qemu/.*\"}[5m]) * on(id) group_left(name,node) pve_guest_info", "legendFormat": "{{name}} read", "refId": "A"}],
+            "title": "VM disk read rate",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "fieldConfig": {"defaults": {"unit": "Bps", "mappings": []}, "overrides": []},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 65},
+            "id": 22,
+            "options": {"legend": {"displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}},
+            "targets": [{"expr": "rate(pve_disk_written_bytes_total{id=~\"qemu/.*\"}[5m]) * on(id) group_left(name,node) pve_guest_info", "legendFormat": "{{name}} write", "refId": "A"}],
+            "title": "VM disk write rate",
+            "type": "timeseries"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "fieldConfig": {"defaults": {"unit": "short", "mappings": []}, "overrides": []},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 73},
+            "id": 23,
+            "options": {"showHeader": true, "cellHeight": "sm"},
+            "targets": [{"expr": "(pve_ha_state == 1) * on(id) group_left(name,node) pve_guest_info", "format": "table", "instant": true, "refId": "A"}],
+            "title": "Active HA states",
+            "type": "table"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "fieldConfig": {"defaults": {"unit": "short", "mappings": []}, "overrides": []},
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 73},
+            "id": 24,
+            "options": {"showHeader": true, "cellHeight": "sm"},
+            "targets": [{"expr": "(pve_lock_state == 1) * on(id) group_left(name,node) pve_guest_info", "format": "table", "instant": true, "refId": "A"}],
+            "title": "Active guest config locks",
+            "type": "table"
+          },
+          {
+            "datasource": {"type": "prometheus", "uid": "prometheus"},
+            "fieldConfig": {"defaults": {"unit": "short", "mappings": []}, "overrides": []},
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 81},
+            "id": 25,
+            "options": {"showHeader": true, "cellHeight": "sm"},
+            "targets": [{"expr": "pve_version_info", "format": "table", "instant": true, "refId": "A"}],
+            "title": "Proxmox VE version",
+            "type": "table"
           }
         ],
         "refresh": "30s",
