@@ -18,7 +18,7 @@ spec:
             summary: Proxmox exporter is unavailable
             description: Prometheus has been unable to scrape the Proxmox VE exporter for 5 minutes.
         - alert: AtlantisControlPlaneVMDown
-          expr: (pve_up{id=~"qemu/.*"} == bool 0) and on(id) pve_guest_info{type="qemu", name=~"atlantis-cp-.*"}
+          expr: (pve_up{id=~"qemu/.*"} == 0) and on(id) pve_guest_info{type="qemu", name=~"atlantis-cp-.*"}
           for: 2m
           labels:
             severity: critical
