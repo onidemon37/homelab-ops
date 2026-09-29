@@ -8,5 +8,8 @@ resources:
   - networking-controller.yaml
   - networking.yaml
   - secrets.yaml
+  - cloudflare-dns.yaml
+  - cloudflare-dns-records.yaml
+  - cloudflare-tunnel.yaml
   - databases.yaml
   - observability.yaml

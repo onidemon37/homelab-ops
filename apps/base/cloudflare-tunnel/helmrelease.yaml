@@ -1,0 +1,75 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cloudflare-tunnel
+  namespace: networking
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: cloudflare-tunnel
+  values:
+    controllers:
+      cloudflare-tunnel:
+        strategy: RollingUpdate
+        containers:
+          app:
+            image:
+              repository: docker.io/cloudflare/cloudflared
+              tag: 2026.2.0
+            env:
+              NO_AUTOUPDATE: true
+              TUNNEL_METRICS: 0.0.0.0:8080
+              TUNNEL_TRANSPORT_PROTOCOL: quic
+            envFrom:
+              - secretRef:
+                  name: cloudflare-tunnel-secret
+            args: ["tunnel", "run"]
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /ready
+                    port: 8080
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop: ["ALL"]
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 256Mi
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+    configMaps:
+      config:
+        data:
+          config.yaml: |-
+            ingress:
+              - hostname: grafana.andorigna.com
+                service: https://envoy-external.networking.svc.cluster.local:443
+                originRequest:
+                  originServerName: grafana.andorigna.com
+              - hostname: prometheus.andorigna.com
+                service: https://envoy-external.networking.svc.cluster.local:443
+                originRequest:
+                  originServerName: prometheus.andorigna.com
+              - service: http_status:404
+    persistence:
+      config-file:
+        type: configMap
+        identifier: config
+        globalMounts:
+          - path: /etc/cloudflared/config.yaml
+            subPath: config.yaml

@@ -14,3 +14,5 @@ Kubernetes clusters.
 - [Networking](docs/networking.md) — Gateway API and Envoy Gateway
 - [Vault manual bootstrap](docs/vault-manual-bootstrap.md) — initialize and unseal
     the non-prod Vault deployment
+- [Proxmox VE exporter](docs/proxmox-ve-exporter.md) — create the read-only API
+    user/token and run the Dockerized exporter for Prometheus

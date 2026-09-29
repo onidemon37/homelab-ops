@@ -79,8 +79,9 @@ spec:
           folderAnnotation: grafana_folder
           annotations:
             grafana_folder: kube-state-metrics
+        datasources:
+          defaultDatasourceEnabled: false
       datasources:
-        defaultDatasourceEnabled: false
         datasources.yaml:
           apiVersion: 1
           datasources:

@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - internal-gateway.yaml
+  - external-gateway.yaml
   - observability-certificate.yaml
   - longhorn-route.yaml
   - longhorn-reference-grant.yaml

@@ -7,3 +7,18 @@ spec:
   values:
     grafana:
       enabled: true
+      route:
+        main:
+          enabled: true
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          hostnames:
+            - grafana.andorigna.com
+          parentRefs:
+            - name: external
+              namespace: networking
+              sectionName: https
+          matches:
+            - path:
+                type: PathPrefix
+                value: /
