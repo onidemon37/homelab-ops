@@ -22,14 +22,17 @@ the Galactica Kubernetes reviewer JWT must be regenerated and applied to Vault a
 
 ## Reconciliation Order
 
-The initial rebuild intentionally activates only the Atlantis-proven baseline:
+The root kustomization reconciles every wave below. Flux orders them with `dependsOn`:
 
 ```text
-flux-system -> infrastructure -> networking -> observability collectors
+infrastructure -> rbac -> secrets
+infrastructure -> cnpg
+infrastructure -> networking-controller -> networking
+secrets + cnpg -> databases
+networking + databases -> observability
+secrets + networking -> cloudflare-dns -> cloudflare-dns-records
+secrets + networking -> cloudflare-tunnel
 ```
-
-CNPG/databases and remote Vault secrets are kept out of the Galactica root until this baseline
-is healthy. Add those waves one at a time after a successful clean rebuild.
 
 ```text
 infrastructure
@@ -38,8 +41,11 @@ infrastructure
 secrets
   -> Galactica SecretStores and ExternalSecrets backed by Atlantis Vault
 
+cnpg
+  -> CloudNative-PG operator
+
 databases
-  -> CNPG operator and Grafana PostgreSQL cluster
+  -> Grafana PostgreSQL cluster
 
 networking
   -> Envoy Gateway and internal Gateway VIP
@@ -61,13 +67,17 @@ The secrets wave requires Atlantis Vault to be initialized, unsealed, and config
 ```text
 apps/overlays/prod/galactica/
   infrastructure/
+  rbac/
   secrets/
+  cnpg/
   databases/
+  networking-controller/
   networking/
+  cloudflare-dns/ cloudflare-dns-records/ cloudflare-tunnel/
   observability/
 ```
 
-CNPG is owned only by `databases`. Vault is not present in any Galactica overlay.
+The CNPG operator is owned by `cnpg`, and the Grafana database cluster by `databases`. Vault is not present in any Galactica overlay.
 
 The internal Gateway uses a separate service VIP from the Kubernetes API VIP:
 

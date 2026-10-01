@@ -8,7 +8,7 @@ module "flux_operator_bootstrap" {
   revision = var.bootstrap_revision
 
   gitops_resources = {
-    instance_yaml = file("${path.root}/../../clusters/non-prod/flux-system/flux-instance.yaml")
+    instance_yaml = file("${path.root}/../../clusters/non-prod/pegasus/flux-system/flux-instance.yaml")
   }
 
   # Secret content is hashed, not stored in Terraform state (see module docs).

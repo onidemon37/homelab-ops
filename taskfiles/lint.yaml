@@ -1,0 +1,36 @@
+version: '3'
+
+tasks:
+  all:
+    desc: Run every linter
+    cmds:
+      - task: yaml
+      - task: shell
+      - task: terraform
+
+  yaml:
+    desc: yamllint (relaxed, same as CI)
+    cmds:
+      - >-
+        find . -type f \( -name '*.yaml' -o -name '*.yml' \)
+        -not -path './.git/*' -not -path '*/.terraform/*'
+        -print0 | xargs -0 yamllint -d relaxed --no-warnings
+
+  shell:
+    desc: shellcheck scripts/ (falls back to bash -n)
+    cmds:
+      - |
+        if command -v shellcheck >/dev/null; then
+          shellcheck scripts/*.sh
+        else
+          echo "shellcheck not installed; falling back to bash -n"
+          for f in scripts/*.sh; do bash -n "$f"; done
+        fi
+
+  terraform:
+    desc: tofu/terraform fmt check
+    cmds:
+      - |
+        tf=$(command -v tofu || command -v terraform || true)
+        if [ -z "$tf" ]; then echo "tofu/terraform not installed; skipping"; exit 0; fi
+        "$tf" fmt -check -recursive terraform

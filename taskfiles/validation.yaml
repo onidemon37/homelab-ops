@@ -1,0 +1,14 @@
+version: '3'
+
+tasks:
+  all:
+    desc: Render every cluster with kustomize
+    cmds:
+      - scripts/render-all.sh all
+
+  cluster:
+    desc: "Render one cluster: task validation:cluster CLUSTER=pegasus (atlantis|galactica|pegasus)"
+    requires:
+      vars: [CLUSTER]
+    cmds:
+      - scripts/render-all.sh {{.CLUSTER}}

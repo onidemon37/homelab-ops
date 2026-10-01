@@ -3,4 +3,4 @@ kind: Kustomization
 resources:
   - ../../../../base/cnpg
 patches:
-  - path: ../databases/cnpg-patches.yaml
+  - path: cnpg-patches.yaml
