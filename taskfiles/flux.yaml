@@ -1,0 +1,16 @@
+version: '3'
+
+vars:
+  CONTEXT: '{{.CONTEXT | default ""}}'
+
+tasks:
+  status:
+    desc: "Show Flux Kustomizations and HelmReleases (optional: CONTEXT=<kube-context>)"
+    cmds:
+      - kubectl {{if .CONTEXT}}--context {{.CONTEXT}}{{end}} get kustomizations,helmreleases -A
+
+  reconcile:
+    desc: "Reconcile the git source and root Kustomization (optional: CONTEXT=<kube-context>)"
+    cmds:
+      - flux {{if .CONTEXT}}--context {{.CONTEXT}}{{end}} reconcile source git flux-system
+      - flux {{if .CONTEXT}}--context {{.CONTEXT}}{{end}} reconcile kustomization flux-system --with-source

@@ -3,7 +3,7 @@
 This runbook creates two local Minikube clusters for testing the GitOps bootstrap:
 
 - `pegasus` represents non-prod and uses `terraform/non-prod/`.
-- `galactica` represents prod and uses `terraform/prod/`.
+- `galactica` represents prod and uses `terraform/prod/galactica/`.
 
 The clusters are independent Minikube profiles. Terraform connects to each profile
 through the matching kubeconfig context and installs the Flux Operator, Flux
@@ -195,7 +195,8 @@ kubectl --context <pegasus|galactica> -n flux-system logs deploy/source-controll
 ```
 
 If `GitRepository` says `provider is not set to github`, ensure the committed
-`clusters/<environment>/flux-system/flux-instance.yaml` contains:
+The `flux-instance.yaml` under `clusters/non-prod/pegasus/flux-system/` or
+`clusters/prod/galactica/flux-system/` contains:
 
 ```yaml
 sync:

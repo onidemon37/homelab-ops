@@ -51,7 +51,8 @@ tofu apply \
 Terraform reaches the cluster the same way `kubectl --context <ctx>` does — via the
 local `~/.kube/config` file and the named context (`config_path`/`config_context` on
 both providers), no separate credentials needed. Each root's `main.tf` reads the same
-`clusters/<env>/flux-system/flux-instance.yaml` already committed here, so the
+the `flux-instance.yaml` already committed here (`clusters/non-prod/pegasus/flux-system/`,
+`clusters/prod/galactica/flux-system/` or `clusters/prod/atlantis/flux-system/`), so the
 Kubernetes-manifest and Terraform installation paths stay in sync — no duplicated
 config.
 
@@ -198,13 +199,14 @@ Confirm both Terraform roots are empty before recreating the bootstrap:
 
 ```sh
 cd terraform/non-prod && tofu state list
-cd ../prod && tofu state list
+cd ../prod/galactica && tofu state list
+cd ../atlantis && tofu state list
 ```
 
 Re-bootstrap one environment at a time using the GitHub App credentials from Step 2:
 
 ```sh
-cd terraform/non-prod   # or terraform/prod
+cd terraform/non-prod   # or terraform/prod/galactica or terraform/prod/atlantis
 tofu init
 tofu apply \
   -var bootstrap_revision=1 \
@@ -218,13 +220,13 @@ bootstrap, apply the committed manifest once:
 
 ```sh
 kubectl --context galactica apply \
-  -f clusters/prod/flux-system/flux-instance.yaml
+  -f clusters/prod/galactica/flux-system/flux-instance.yaml
 ```
 
 ## 5. Apply the FluxInstance manually (non-Terraform path)
 
 ```sh
-kubectl --context <pegasus|galactica> apply -k clusters/<non-prod|prod>/flux-system
+kubectl --context <pegasus|galactica> apply -k clusters/<non-prod/pegasus|prod/galactica|prod/atlantis>/flux-system
 ```
 
 This installs `source-controller`, `kustomize-controller`, `helm-controller`, and

@@ -1,6 +1,6 @@
 # Wave 2: Networking
 # Deploys Envoy Gateway and Gateway API CRDs.
-# dependsOn infrastructure-services so cert-manager ClusterIssuers exist
+# dependsOn infrastructure so cert-manager ClusterIssuers exist
 # before any TLS-backed Gateway resources are created.
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -9,7 +9,7 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
-    - name: infrastructure-services
+    - name: infrastructure
   interval: 10m
   path: ./apps/overlays/non-prod/pegasus/networking
   prune: true

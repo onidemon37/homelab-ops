@@ -58,9 +58,8 @@ jobs:
               apps/overlays/prod/galactica/observability
           - cluster: pegasus
             paths: |
-              clusters/non-prod/atlantis
-              apps/overlays/non-prod/pegasus/infrastructure/controllers
-              apps/overlays/non-prod/pegasus/infrastructure/services
+              clusters/non-prod/pegasus
+              apps/overlays/non-prod/pegasus/infrastructure
               apps/overlays/non-prod/pegasus/databases
               apps/overlays/non-prod/pegasus/networking
               apps/overlays/non-prod/pegasus/observability
@@ -78,20 +77,3 @@ jobs:
             test -n "$path" || continue
             kustomize build "$path"
           done <<< "${{ matrix.paths }}"
-
-  ansible:
-    name: Ansible lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install ansible-lint
-        run: python -m pip install ansible-core ansible-lint
-      - name: Lint Ansible when present
-        shell: bash
-        run: |
-          if find infrastructure/ansible -type f \( -name '*.yml' -o -name '*.yaml' \) -print -quit 2>/dev/null | grep -q .; then
-            ansible-lint infrastructure/ansible
-          else
-            echo "No Ansible files yet; skipping until the Debian bootstrap phase."
-          fi

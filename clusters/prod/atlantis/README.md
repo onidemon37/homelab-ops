@@ -3,7 +3,7 @@
 Atlantis is the dedicated Vault cluster. It is a separate failure and trust domain from the
 workload clusters:
 
-- `clusters/non-prod` manages non-production Pegasus workloads.
+- `clusters/non-prod/pegasus` manages the non-production Pegasus cluster.
 - `clusters/prod/galactica` manages production workloads.
 - `clusters/prod/atlantis` manages the Vault cluster foundation and shared services.
 
@@ -21,31 +21,20 @@ remains in its own cluster and storage domain.
 
 ## Current Scope
 
-Atlantis currently reconciles only the foundation Kustomization:
+Atlantis reconciles the foundation, networking, observability collectors and the Vault
+shared-services layer:
 
 ```text
-apps/overlays/prod/atlantis/infrastructure/
-  cert-manager
-  Longhorn
-  External Secrets Operator
-  Metrics Server
-  Reloader
+apps/overlays/prod/atlantis/
+  infrastructure/    cert-manager, Longhorn, External Secrets, Metrics Server, Reloader
+  networking/        private internal Gateway
+  observability/     Alloy and kube-state-metrics collectors
+  shared-services/   Vault (HA Raft) and its TLS route
 ```
 
-Atlantis does not deploy CNPG, Grafana, observability, tenant workloads, or public application
-networking.
-
+Atlantis does not deploy CNPG, Grafana, tenant workloads, or public application networking.
 Atlantis does deploy Envoy Gateway for private internal traffic. It is not exposed through
 Cloudflare or the public Internet.
-
-The future shared-services layer is:
-
-```text
-apps/overlays/prod/atlantis/shared-services/
-```
-
-It is intentionally not reconciled yet. It will later contain Vault and Vault-dependent shared
-integrations after the foundation is healthy.
 
 ## Reconciliation Order
 

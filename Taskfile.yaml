@@ -11,11 +11,11 @@ tasks:
       - task --list
 
   validate:
-    desc: Validate repository structure and manifests
+    desc: "Render every cluster with kustomize (Makefile: make validate)"
     cmds:
       - task: validation:all
 
   lint:
-    desc: Lint YAML, Markdown, and Ansible when present
+    desc: "Lint YAML, shell and Terraform (Makefile: make lint)"
     cmds:
       - task: lint:all
